@@ -1,7 +1,10 @@
+'use client'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-
+import { useAuth } from '@/lib/auth'
 export default function Home() {
+
+  const { user } = useAuth()
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] text-center space-y-8">
       <h1 className="text-4xl font-bold">Welcome to Memory Card Game</h1>
@@ -12,9 +15,9 @@ export default function Home() {
         <Link href="/decks">
           <Button size="lg">Browse Decks</Button>
         </Link>
-        <Link href="/create">
+       { user && <Link href="/create">
           <Button size="lg" variant="outline">Create Deck</Button>
-        </Link>
+        </Link>}
       </div>
     </div>
   )

@@ -3,38 +3,34 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth"
-
-export function Navigation() {
+export default function Navigation() {
   const { user, signOutUser } = useAuth()
 
   return (
-    <nav className="border-b">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-bold">
-          Memory Card Game
+    <nav className="flex items-center justify-between p-4 bg-white shadow-sm">
+      <div className="flex items-center gap-4">
+        <Link href="/">
+          <Button variant="link">Home</Button>
         </Link>
-        <div className="space-x-4">
-          <Link href="/decks">
-            <Button variant="ghost">Browse Decks</Button>
-          </Link>
-          {user ? (
-            <>
-              <Link href="/create">
-                <Button variant="ghost">Create Deck</Button>
-              </Link>
-              <Button
-                variant="ghost"
-                onClick={signOutUser}
-              >
-                Sign Out
-              </Button>
-            </>
-          ) : (
-            <Link href="/auth">
-              <Button variant="ghost">Sign In</Button>
+        <Link href="/decks">
+          <Button variant="link">Browse Decks</Button>
+        </Link>
+      </div>
+      <div className="flex items-center gap-4">
+        {user ? (
+          <>
+            <Link href="/create">
+              <Button variant="outline">Create Deck</Button>
             </Link>
-          )}
-        </div>
+            <Button variant="ghost" onClick={() => signOutUser()}>
+              Sign Out
+            </Button>
+          </>
+        ) : (
+          <Link href="/auth">
+            <Button>Sign In</Button>
+          </Link>
+        )}
       </div>
     </nav>
   )

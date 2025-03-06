@@ -19,7 +19,18 @@ interface CardGameProps {
   onRestart?: () => void
 }
 
-export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGameProps) {
+// Fisher-Yates shuffle algorithm
+function shuffleCards<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+export default function CardGame({ cards: initialCards, deckTitle, deckId, onRestart }: CardGameProps) {
+  const [cards, setCards] = useState<CardType[]>([])
   const [flippedCards, setFlippedCards] = useState<string[]>([])
   const [matchedPairs, setMatchedPairs] = useState<string[]>([])
   const [isRevealing, setIsRevealing] = useState(true)
@@ -30,16 +41,18 @@ export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGa
   const gameStartTime = useRef<number | null>(null)
   const timerRef = useRef<NodeJS.Timeout>()
 
-  // Reset game state
-  useEffect(() => {
-    setFlippedCards(cards.map(card => card.id))
+  // Shuffle cards when game starts or restarts
+  const initializeGame = () => {
+    const shuffledCards = shuffleCards(initialCards)
+    setCards(shuffledCards)
+    setFlippedCards(shuffledCards.map(card => card.id)) // Show all cards initially
     setMatchedPairs([])
     setMoves(0)
     setTimeElapsed(0)
-    gameStartTime.current = null
     setIsRevealing(true)
     setCanFlip(false)
     setShowPostGame(false)
+    gameStartTime.current = null
 
     if (timerRef.current) {
       clearInterval(timerRef.current)
@@ -64,7 +77,12 @@ export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGa
         clearInterval(timerRef.current)
       }
     }
-  }, [cards])
+  }
+
+  // Initialize game on mount and when restarting
+  useEffect(() => {
+    return initializeGame()
+  }, [initialCards])
 
   // Check for game completion
   useEffect(() => {
@@ -106,6 +124,7 @@ export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGa
 
   const handlePlayAgain = () => {
     setShowPostGame(false)
+    initializeGame()
     onRestart?.()
   }
 
