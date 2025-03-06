@@ -113,12 +113,8 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
           
           <CardGame 
             cards={deck.cards}
-            onGameComplete={() => {
-              setTimeout(() => {
-                setShowPreGameModal(true)
-                setGameStarted(false)
-              }, 2000)
-            }}
+            deckTitle={deck.title}
+            deckId={deck.id}
             onRestart={handleRestartGame}
           />
 
