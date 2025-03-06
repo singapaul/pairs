@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { supabase } from '@/lib/supabase'
+import { auth } from '@/lib/firebase'
+import { sendSignInLinkToEmail } from 'firebase/auth'
 import { toast } from 'sonner'
 
 export function SignInForm() {
@@ -16,44 +16,39 @@ export function SignInForm() {
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
+      // Store the email in localStorage for verification
+      window.localStorage.setItem('emailForSignIn', email)
 
-      if (error) throw error
+      const actionCodeSettings = {
+        // This URL must be whitelisted in the Firebase Console
+        url: `${window.location.origin}/auth/verify`,
+        handleCodeInApp: true
+      }
 
-      toast.success('Check your email', {
-        description: 'We sent you a magic link to sign in.',
-      })
-    } catch (error: unknown) {
-      console.error('Sign in error:', error)
-      toast.error('Error', {
-        description: 'Something went wrong. Please try again.',
-      })
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      toast.success('Check your email for the login link!')
+    } catch (error) {
+      console.error('Error sending sign-in link:', error)
+      toast.error('Failed to send login link. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSignIn} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+    <div className="max-w-md mx-auto space-y-4">
+      <form onSubmit={handleSignIn} className="space-y-4">
         <Input
-          id="email"
           type="email"
           placeholder="Enter your email"
           value={email}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
-      </div>
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Sending...' : 'Sign in with Magic Link'}
-      </Button>
-    </form>
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Sending link...' : 'Send magic link'}
+        </Button>
+      </form>
+    </div>
   )
 } 

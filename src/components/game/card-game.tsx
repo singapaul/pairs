@@ -1,149 +1,105 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card } from '@/components/ui/card'
-import { supabase } from '@/lib/supabase'
+import Card from './card'
 import { toast } from 'sonner'
-import { Database } from '@/types/database'
+import { Loader2 } from 'lucide-react'
 
-type CardType = Database['public']['Tables']['decks']['Row']['cards'][0] & {
-  isFlipped: boolean
-  isMatched: boolean
+interface CardType {
+  id: string
+  content: string
+  pairId: string
 }
 
 interface CardGameProps {
-  deckId: string
-  cards: Database['public']['Tables']['decks']['Row']['cards']
+  cards: CardType[]
+  onGameComplete?: () => void
+  onRestart?: () => void
 }
 
-export function CardGame({ deckId, cards: initialCards }: CardGameProps) {
-  const [cards, setCards] = useState<CardType[]>([])
-  const [flippedCards, setFlippedCards] = useState<CardType[]>([])
+export default function CardGame({ cards, onGameComplete, onRestart }: CardGameProps) {
+  const [flippedCards, setFlippedCards] = useState<string[]>([])
+  const [matchedPairs, setMatchedPairs] = useState<string[]>([])
+  const [isRevealing, setIsRevealing] = useState(true)
+  const [canFlip, setCanFlip] = useState(false)
   const [moves, setMoves] = useState(0)
-  const [time, setTime] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isGameOver, setIsGameOver] = useState(false)
 
+  // Initial reveal of all cards
   useEffect(() => {
-    // Shuffle and initialize cards
-    const shuffledCards = [...initialCards]
-      .sort(() => Math.random() - 0.5)
-      .map((card) => ({
-        ...card,
-        isFlipped: false,
-        isMatched: false,
-      }))
-    setCards(shuffledCards)
-  }, [initialCards])
+    const revealTimer = setTimeout(() => {
+      setFlippedCards([])
+      setIsRevealing(false)
+      setCanFlip(true)
+    }, 3000)
 
+    return () => clearTimeout(revealTimer)
+  }, [])
+
+  // Reset game state
   useEffect(() => {
-    let timer: NodeJS.Timeout
-    if (isPlaying && !isGameOver) {
-      timer = setInterval(() => {
-        setTime((prev) => prev + 1)
-      }, 1000)
+    setFlippedCards(cards.map(card => card.id))
+    setMatchedPairs([])
+    setMoves(0)
+  }, [cards])
+
+  // Check for game completion
+  useEffect(() => {
+    if (matchedPairs.length === cards.length / 2 && matchedPairs.length > 0) {
+      toast.success(`Congratulations! You won in ${moves} moves! 🎉`)
+      onGameComplete?.()
     }
-    return () => clearInterval(timer)
-  }, [isPlaying, isGameOver])
+  }, [matchedPairs, cards.length, moves, onGameComplete])
 
-  const handleCardClick = (clickedCard: CardType) => {
-    if (!isPlaying) {
-      setIsPlaying(true)
-    }
+  const handleCardClick = (cardId: string) => {
+    if (!canFlip || flippedCards.includes(cardId)) return
 
-    if (flippedCards.length === 2 || clickedCard.isFlipped || clickedCard.isMatched) {
-      return
-    }
-
-    const newCards = cards.map((card) =>
-      card.id === clickedCard.id ? { ...card, isFlipped: true } : card
-    )
-    setCards(newCards)
-
-    const newFlippedCards = [...flippedCards, clickedCard]
+    const newFlippedCards = [...flippedCards, cardId]
     setFlippedCards(newFlippedCards)
 
     if (newFlippedCards.length === 2) {
-      setMoves((prev) => prev + 1)
-      checkMatch(newFlippedCards)
-    }
-  }
+      setMoves(prev => prev + 1)
+      setCanFlip(false)
 
-  const checkMatch = (flippedCards: CardType[]) => {
-    const [card1, card2] = flippedCards
-    if (card1.content === card2.content) {
-      // Match found
-      const newCards = cards.map((card) =>
-        card.id === card1.id || card.id === card2.id
-          ? { ...card, isMatched: true }
-          : card
-      )
-      setCards(newCards)
-      setFlippedCards([])
+      const [firstId, secondId] = newFlippedCards
+      const firstCard = cards.find(card => card.id === firstId)
+      const secondCard = cards.find(card => card.id === secondId)
 
-      // Check if game is over
-      if (newCards.every((card) => card.isMatched)) {
-        setIsGameOver(true)
-        saveScore()
-      }
-    } else {
-      // No match
-      setTimeout(() => {
-        const newCards = cards.map((card) =>
-          card.id === card1.id || card.id === card2.id
-            ? { ...card, isFlipped: false }
-            : card
-        )
-        setCards(newCards)
+      if (firstCard && secondCard && firstCard.pairId === secondCard.pairId) {
+        setMatchedPairs(prev => [...prev, firstCard.pairId])
         setFlippedCards([])
-      }, 1000)
-    }
-  }
-
-  const saveScore = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await supabase.from('scores').insert({
-          user_id: user.id,
-          deck_id: deckId,
-          time,
-          moves,
-        })
-        toast.success('Game Over!', {
-          description: `You completed the game in ${time} seconds with ${moves} moves!`,
-        })
+        setCanFlip(true)
+      } else {
+        setTimeout(() => {
+          setFlippedCards([])
+          setCanFlip(true)
+        }, 1000)
       }
-    } catch (error: unknown) {
-      console.error('Error saving score:', error)
     }
-  }
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>Time: {formatTime(time)}</div>
-        <div>Moves: {moves}</div>
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-4 px-4">
+        <div className="text-lg font-medium">
+          Moves: {moves}
+        </div>
+        {isRevealing && (
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Memorize the cards...</span>
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4">
         {cards.map((card) => (
           <Card
             key={card.id}
-            className={`aspect-square cursor-pointer transition-all duration-300 ${
-              card.isFlipped || card.isMatched ? 'bg-blue-500' : 'bg-gray-200'
-            }`}
-            onClick={() => handleCardClick(card)}
-          >
-            <div className="h-full flex items-center justify-center text-white text-xl">
-              {card.isFlipped || card.isMatched ? card.content : '?'}
-            </div>
-          </Card>
+            content={card.content}
+            isFlipped={flippedCards.includes(card.id) || matchedPairs.includes(card.pairId)}
+            onClick={() => handleCardClick(card.id)}
+            disabled={isRevealing || !canFlip || matchedPairs.includes(card.pairId)}
+            matched={matchedPairs.includes(card.pairId)}
+          />
         ))}
       </div>
     </div>

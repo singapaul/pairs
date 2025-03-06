@@ -2,11 +2,10 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useSupabase } from "@/components/providers/supabase-provider"
-import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/lib/auth"
 
 export function Navigation() {
-  const { user } = useSupabase()
+  const { user, signOutUser } = useAuth()
 
   return (
     <nav className="border-b">
@@ -25,10 +24,7 @@ export function Navigation() {
               </Link>
               <Button
                 variant="ghost"
-                onClick={async () => {
-                  const { error } = await supabase.auth.signOut()
-                  if (error) console.error('Error signing out:', error)
-                }}
+                onClick={signOutUser}
               >
                 Sign Out
               </Button>
