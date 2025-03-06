@@ -22,6 +22,9 @@ export default function Navigation() {
             <Link href="/create">
               <Button variant="outline">Create Deck</Button>
             </Link>
+            <Link href="/stats">
+              <Button variant="link">My Stats</Button>
+            </Link>
             <Button variant="ghost" onClick={() => signOutUser()}>
               Sign Out
             </Button>

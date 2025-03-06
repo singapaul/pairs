@@ -5,6 +5,8 @@ import Card from './card'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import PostGameModal from './post-game-modal'
+import { useAuth } from '@/lib/auth'
+import { saveGameResult } from '@/lib/stats'
 
 interface CardType {
   id: string
@@ -19,18 +21,8 @@ interface CardGameProps {
   onRestart?: () => void
 }
 
-// Fisher-Yates shuffle algorithm
-function shuffleCards<T>(array: T[]): T[] {
-  const shuffled = [...array]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  return shuffled
-}
-
-export default function CardGame({ cards: initialCards, deckTitle, deckId, onRestart }: CardGameProps) {
-  const [cards, setCards] = useState<CardType[]>([])
+export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGameProps) {
+  const { user } = useAuth()
   const [flippedCards, setFlippedCards] = useState<string[]>([])
   const [matchedPairs, setMatchedPairs] = useState<string[]>([])
   const [isRevealing, setIsRevealing] = useState(true)
@@ -39,35 +31,36 @@ export default function CardGame({ cards: initialCards, deckTitle, deckId, onRes
   const [showPostGame, setShowPostGame] = useState(false)
   const [timeElapsed, setTimeElapsed] = useState(0)
   const gameStartTime = useRef<number | null>(null)
-  const timerRef = useRef<NodeJS.Timeout>()
+  const timerRef = useRef<NodeJS.Timeout>(null)
 
-  // Shuffle cards when game starts or restarts
-  const initializeGame = () => {
-    const shuffledCards = shuffleCards(initialCards)
-    setCards(shuffledCards)
-    setFlippedCards(shuffledCards.map(card => card.id)) // Show all cards initially
+  // Initialize game
+  useEffect(() => {
+    // Show all cards initially
+    setFlippedCards(cards.map(card => card.id))
     setMatchedPairs([])
     setMoves(0)
     setTimeElapsed(0)
     setIsRevealing(true)
     setCanFlip(false)
-    setShowPostGame(false)
     gameStartTime.current = null
 
+    // Clear any existing timer
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
 
-    // Initial reveal timer
+    // After 3 seconds, hide cards and start game
     const revealTimer = setTimeout(() => {
       setFlippedCards([])
       setIsRevealing(false)
       setCanFlip(true)
       gameStartTime.current = Date.now()
-      
-      // Start the game timer
+
+      // Start timer
       timerRef.current = setInterval(() => {
-        setTimeElapsed(Date.now() - (gameStartTime.current || 0))
+        if (gameStartTime.current) {
+          setTimeElapsed(Date.now() - gameStartTime.current)
+        }
       }, 1000)
     }, 3000)
 
@@ -77,23 +70,43 @@ export default function CardGame({ cards: initialCards, deckTitle, deckId, onRes
         clearInterval(timerRef.current)
       }
     }
-  }
+  }, [cards])
 
-  // Initialize game on mount and when restarting
-  useEffect(() => {
-    return initializeGame()
-  }, [initialCards])
-
-  // Check for game completion
+  // Handle game completion
   useEffect(() => {
     if (matchedPairs.length === cards.length / 2 && matchedPairs.length > 0) {
+      // Stop timer
       if (timerRef.current) {
         clearInterval(timerRef.current)
       }
+
+      // Save game result if user is logged in
+      if (user) {
+        const finalTime = Date.now() - (gameStartTime.current || Date.now())
+        const result = {
+          userId: user.uid,
+          deckId,
+          deckTitle,
+          moves,
+          timeElapsed: finalTime,
+          completedAt: new Date(),
+          perfectGame: moves === cards.length / 2
+        }
+
+        saveGameResult(result)
+          .then(() => {
+            toast.success('Game completed!')
+          })
+          .catch((error) => {
+            console.error('Error saving game result:', error)
+            toast.error('Failed to save game result')
+          })
+      }
+
       setShowPostGame(true)
       setCanFlip(false)
     }
-  }, [matchedPairs, cards.length])
+  }, [matchedPairs, cards.length, moves, user, deckId, deckTitle])
 
   const handleCardClick = (cardId: string) => {
     if (!canFlip || flippedCards.includes(cardId)) return
@@ -110,10 +123,12 @@ export default function CardGame({ cards: initialCards, deckTitle, deckId, onRes
       const secondCard = cards.find(card => card.id === secondId)
 
       if (firstCard && secondCard && firstCard.pairId === secondCard.pairId) {
+        // Match found
         setMatchedPairs(prev => [...prev, firstCard.pairId])
         setFlippedCards([])
         setCanFlip(true)
       } else {
+        // No match
         setTimeout(() => {
           setFlippedCards([])
           setCanFlip(true)
@@ -124,11 +139,12 @@ export default function CardGame({ cards: initialCards, deckTitle, deckId, onRes
 
   const handlePlayAgain = () => {
     setShowPostGame(false)
-    initializeGame()
-    onRestart?.()
+    if (onRestart) {
+      onRestart()
+    }
   }
 
-  function formatTime(ms: number): string {
+  const formatTime = (ms: number): string => {
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
