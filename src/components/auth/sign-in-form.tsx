@@ -55,7 +55,7 @@ export default function SignInForm() {
               Sending link...
             </>
           ) : (
-            'Sign in with Email'
+            'Sign in with Email Magic Link'
           )}
         </Button>
       </form>
