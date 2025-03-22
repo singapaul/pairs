@@ -55,14 +55,14 @@ export function DeckFilters({ filters, onChange, onReset, totalDecks }: DeckFilt
         </div>
       </div>
       
-      <div className="flex gap-8">
-        <div className="space-y-2">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+        <div className="w-full md:w-auto space-y-2">
           <Label>Year Group</Label>
           <Select
             value={filters.yearGroup || undefined}
             onValueChange={(value) => handleChange('yearGroup', value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="All year groups" />
             </SelectTrigger>
             <SelectContent>
@@ -76,13 +76,13 @@ export function DeckFilters({ filters, onChange, onReset, totalDecks }: DeckFilt
           </Select>
         </div>
 
-        <div className="space-y-2">
+        <div className="w-full md:w-auto space-y-2">
           <Label>Subject</Label>
           <Select
             value={filters.subject || undefined}
             onValueChange={(value) => handleChange('subject', value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="All subjects" />
             </SelectTrigger>
             <SelectContent>
@@ -96,22 +96,23 @@ export function DeckFilters({ filters, onChange, onReset, totalDecks }: DeckFilt
           </Select>
         </div>
 
-        <div className="space-y-2">
+        <div className="w-full md:w-auto space-y-2">
           <Label>Topic</Label>
           <Input
             placeholder="Filter by topic"
             value={filters.topic}
             onChange={(e) => handleChange('topic', e.target.value)}
+            className="w-full"
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="w-full md:w-auto space-y-2">
           <Label>Number of Pairs</Label>
           <Select
             value={filters.pairCount?.toString() || undefined}
             onValueChange={(value) => handleChange('pairCount', value === 'all' ? null : parseInt(value))}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Any number" />
             </SelectTrigger>
             <SelectContent>
