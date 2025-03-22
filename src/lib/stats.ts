@@ -67,6 +67,12 @@ export async function saveGameResult(result: GameResult) {
         lastPlayedAt: serverTimestamp()
       })
     }
+
+    // Increment the deck's play count
+    const deckRef = doc(db, 'decks', result.deckId)
+    await updateDoc(deckRef, {
+      plays: increment(1)
+    })
   } catch (error) {
     console.error('Error saving game stats:', error)
   }

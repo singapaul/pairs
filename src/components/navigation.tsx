@@ -3,12 +3,31 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth"
-export default function Navigation() {
+import { Menu } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+
+interface NavigationProps {
+  onToggleSidebar?: () => void
+}
+
+export default function Navigation({ onToggleSidebar }: NavigationProps) {
   const { user, signOutUser } = useAuth()
+  const pathname = usePathname()
+  const isDecksPage = pathname?.startsWith('/decks')
 
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-sm">
       <div className="flex items-center gap-4">
+        {isDecksPage && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleSidebar}
+            className="lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
         <Link href="/">
           <Button variant="link">Home</Button>
         </Link>
