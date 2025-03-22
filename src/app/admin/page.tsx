@@ -1,19 +1,23 @@
 'use client'
 
-import { useRequireAdmin } from '@/lib/auth'
+import { useAuth } from '@/lib/auth'
 
 export default function AdminPage() {
-  const { user, loading, isAdmin } = useRequireAdmin()
+  const { isAdmin } = useAuth()
 
-  if (loading) {
-    return <div>Loading...</div>
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <h1 className="text-2xl font-bold">Access Denied</h1>
+        <p>You do not have permission to view this page.</p>
+      </div>
+    )
   }
 
-  // Only rendered if user is authenticated and is an admin
   return (
     <div>
-      <h1>Admin Dashboard</h1>
-      {/* Your admin content */}
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      {/* Add admin features here */}
     </div>
   )
 } 

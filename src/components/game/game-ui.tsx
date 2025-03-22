@@ -1,24 +1,25 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { CardGame } from '@/components/game/card-game'
+import { useEffect, useState, useCallback } from 'react'
+import CardGame from '@/components/game/card-game'
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/database'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 type Deck = Database['public']['Tables']['decks']['Row']
+interface CardType {
+  id: string
+  content: string
+  pairId: string
+}
 
 export function GameUI({ deckId }: { deckId: string }) {
   const [deck, setDeck] = useState<Deck | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchDeck()
-  }, [deckId])
-
-  const fetchDeck = async () => {
+  const fetchDeck = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('decks')
@@ -34,7 +35,11 @@ export function GameUI({ deckId }: { deckId: string }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [deckId])
+
+  useEffect(() => {
+    void fetchDeck()
+  }, [fetchDeck])
 
   if (loading) {
     return <div className="text-center">Loading deck...</div>
@@ -51,6 +56,12 @@ export function GameUI({ deckId }: { deckId: string }) {
     )
   }
 
+  // Transform cards to match CardType interface
+  const transformedCards: CardType[] = deck.cards.map((card) => ({
+    ...card,
+    pairId: card.id.split('-')[0] // Assuming pairs share the same prefix before the hyphen
+  }))
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
@@ -62,7 +73,11 @@ export function GameUI({ deckId }: { deckId: string }) {
       {deck.description && (
         <p className="text-gray-600">{deck.description}</p>
       )}
-      <CardGame deckId={deck.id} cards={deck.cards} />
+      <CardGame 
+        deckId={deck.id} 
+        deckTitle={deck.title}
+        cards={transformedCards} 
+      />
     </div>
   )
 } 

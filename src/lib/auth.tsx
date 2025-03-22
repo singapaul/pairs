@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User, onAuthStateChanged, signOut, signInWithEmailLink, isSignInWithEmailLink, sendSignInLinkToEmail, signInAnonymously } from 'firebase/auth'
+import { User, onAuthStateChanged, signOut, sendSignInLinkToEmail, signInAnonymously } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
