@@ -122,7 +122,7 @@ export default function CreateDeckPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
+    <div className="max-w-3xl mx-auto p-4 mt-16">
       <div className="mb-8">
         <Progress value={step * 33.33} className="h-2" />
         <p className="text-sm text-gray-500 mt-2">Step {step} of 3</p>

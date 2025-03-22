@@ -213,7 +213,7 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="max-w-3xl mx-auto py-8 mt-16">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Edit Deck</h1>
         <div className="flex items-center gap-2 text-sm text-gray-600">
