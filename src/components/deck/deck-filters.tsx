@@ -55,7 +55,7 @@ export function DeckFilters({ filters, onChange, onReset, totalDecks }: DeckFilt
         </div>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
         <div className="w-full md:w-auto space-y-2">
           <Label>Year Group</Label>
           <Select

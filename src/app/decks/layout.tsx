@@ -60,7 +60,7 @@ export default function DecksLayout({
         {/* Sidebar */}
         <div
           className={cn(
-            "fixed inset-y-0 left-0 z-40 w-64 transform bg-background border-r transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:transform-none",
+            "fixed top-16 bottom-0 left-0 z-40 w-64 transform bg-background border-r transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:transform-none",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >

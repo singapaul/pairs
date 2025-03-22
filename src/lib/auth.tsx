@@ -79,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signInAnonymously(auth)
       toast.success('Signed in as guest')
+      router.push('/decks')
     } catch (error) {
       console.error('Error signing in anonymously:', error)
       toast.error('Failed to sign in as guest')

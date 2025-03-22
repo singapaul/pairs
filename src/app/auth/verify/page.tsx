@@ -26,7 +26,7 @@ export default function VerifyPage() {
             await signInWithEmailLink(auth, email, window.location.href)
             window.localStorage.removeItem('emailForSignIn') // Clean up
             toast.success('Successfully signed in!')
-            router.push('/')
+            router.push('/decks')
           } else {
             throw new Error('No email provided')
           }
