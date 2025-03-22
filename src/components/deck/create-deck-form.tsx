@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { supabase } from '@/lib/supabase'
+ 
 import { toast } from 'sonner'
 
 interface Card {
@@ -49,19 +49,9 @@ export function CreateDeckForm() {
 
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+ 
 
-      const { error } = await supabase.from('decks').insert({
-        title,
-        description,
-        is_public: isPublic,
-        user_id: user.id,
-        cards,
-      })
-
-      if (error) throw error
-
+ 
       toast.success('Success', {
         description: 'Deck created successfully!',
       })
