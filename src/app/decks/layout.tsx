@@ -3,10 +3,10 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Library, Clock, Star, FolderEdit } from 'lucide-react'
+import { Library, Clock, Star, FolderEdit, BarChart2 } from 'lucide-react'
 import { useState } from 'react'
- 
 import { useAuth } from '@/lib/auth'
+import Navigation from '@/components/navigation'
 
 const sidebarItems = [
   {
@@ -31,6 +31,11 @@ const authenticatedItems = [
     title: 'My Decks',
     href: '/decks/my-decks',
     icon: FolderEdit
+  },
+  {
+    title: 'My Stats',
+    href: '/decks/stats',
+    icon: BarChart2
   }
 ]
 
@@ -49,9 +54,8 @@ export default function DecksLayout({
   ]
 
   return (
-    <div className="min-h-screen">
-   
-      
+    <div className="min-h-screen pt-16">
+      <Navigation onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
       <div className="flex">
         {/* Sidebar */}
         <div
@@ -60,7 +64,7 @@ export default function DecksLayout({
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
-          <nav className="p-4 space-y-2 mt-16 lg:mt-0">
+          <nav className="p-4 space-y-2">
             {allSidebarItems.map((item) => {
               const Icon = item.icon
               const isActive = pathname === item.href

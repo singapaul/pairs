@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth"
 import { Menu } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import PairsLogo from '@/assets/PairsLogo.svg'
+import Image from 'next/image'
 
 interface NavigationProps {
   onToggleSidebar?: () => void
@@ -16,7 +18,7 @@ export default function Navigation({ onToggleSidebar }: NavigationProps) {
   const isDecksPage = pathname?.startsWith('/decks')
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-white shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 flex items-center justify-between p-4 bg-white shadow-sm z-50">
       <div className="flex items-center gap-4">
         {isDecksPage && (
           <Button
@@ -28,12 +30,15 @@ export default function Navigation({ onToggleSidebar }: NavigationProps) {
             <Menu className="h-5 w-5" />
           </Button>
         )}
-        <Link href="/">
-          <Button variant="link">Home</Button>
+        <Link href="/decks" className="flex items-center">
+          <Image
+            src={PairsLogo}
+            alt="Pairs Logo"
+            className="h-6 w-auto"
+            priority
+          />
         </Link>
-        <Link href="/decks">
-          <Button variant="link">Browse Decks</Button>
-        </Link>
+ 
       </div>
       <div className="flex items-center gap-4">
         {user ? (
@@ -41,9 +46,7 @@ export default function Navigation({ onToggleSidebar }: NavigationProps) {
             <Link href="/create">
               <Button variant="outline">Create Deck</Button>
             </Link>
-            <Link href="/stats">
-              <Button variant="link">My Stats</Button>
-            </Link>
+ 
             <Button variant="ghost" onClick={() => signOutUser()}>
               Sign Out
             </Button>
