@@ -72,7 +72,7 @@ export default function SignInForm() {
             onClick={() => setIsMagicLink(!isMagicLink)}
             disabled={loading}
           >
-            {isMagicLink ? 'Sign in with password' : 'Sign in with magic link'}
+            {isMagicLink ? 'Sign in with email & password' : 'Sign in with magic link'}
           </Button>
         </div>
       </form>

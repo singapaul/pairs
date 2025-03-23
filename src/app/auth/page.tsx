@@ -7,7 +7,7 @@ export default function AuthPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
       <div className="w-full max-w-md p-6">
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-2xl font-bold">Welcome to Memory Game</h1>
+          <h1 className="mb-2 text-2xl font-bold">Welcome to Pairs</h1>
           <p className="text-gray-600">Sign in to track your progress and save your scores</p>
         </div>
 

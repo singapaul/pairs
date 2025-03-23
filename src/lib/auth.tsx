@@ -7,8 +7,6 @@ import {
   signOut,
   signInWithEmailAndPassword as firebaseSignIn,
   sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
