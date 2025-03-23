@@ -95,7 +95,7 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto mt-8 px-4 py-12">
       <PreGameModal
         isOpen={showPreGameModal}
         onClose={() => router.push('/decks')}

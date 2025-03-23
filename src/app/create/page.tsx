@@ -1,131 +1,127 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { collection, addDoc } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
-import { useAuth } from '@/lib/auth'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { v4 as uuidv4 } from 'uuid'
-import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
-import { CardPair, DeckMetadata, SUBJECTS, YEAR_GROUPS } from '@/types/deck'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/lib/auth';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
+import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CardPair, DeckMetadata, SUBJECTS, YEAR_GROUPS } from '@/types/deck';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Progress } from '@/components/ui/progress'
-import { Card } from '@/types/deck'
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Progress } from '@/components/ui/progress';
+import { Card } from '@/types/deck';
 
-const PAIR_OPTIONS = [8, 12, 16, 20] as const
+const PAIR_OPTIONS = [8, 12, 16, 20] as const;
 
 export default function CreateDeckPage() {
-  const [step, setStep] = useState(1)
-  const [numPairs, setNumPairs] = useState<typeof PAIR_OPTIONS[number]>(8)
-  const [pairs, setPairs] = useState<CardPair[]>([])
+  const [step, setStep] = useState(1);
+  const [numPairs, setNumPairs] = useState<(typeof PAIR_OPTIONS)[number]>(8);
+  const [pairs, setPairs] = useState<CardPair[]>([]);
   const [metadata, setMetadata] = useState<DeckMetadata>({
     title: '',
     description: '',
     subject: SUBJECTS[0],
     yearGroup: YEAR_GROUPS[0],
     topic: '',
-    isPublic: true
-  })
-  const [loading, setLoading] = useState(false)
-  const { user } = useAuth()
-  const router = useRouter()
+    isPublic: true,
+  });
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
 
   const updatePair = (id: string, field: 'question' | 'answer', value: string) => {
-    setPairs(prev => prev.map(pair => 
-      pair.id === id ? { ...pair, [field]: value } : pair
-    ))
-  }
+    setPairs(prev => prev.map(pair => (pair.id === id ? { ...pair, [field]: value } : pair)));
+  };
 
   const initializePairs = (count: number) => {
     const newPairs = Array.from({ length: count }, () => ({
       id: uuidv4(),
       question: '',
-      answer: ''
-    }))
-    setPairs(newPairs)
-  }
+      answer: '',
+    }));
+    setPairs(newPairs);
+  };
 
   const handleNext = () => {
     if (step === 1) {
-      initializePairs(numPairs)
-      setStep(2)
+      initializePairs(numPairs);
+      setStep(2);
     } else if (step === 2) {
       // Validate all pairs are filled
-      const isValid = pairs.every(pair => 
-        pair.question.trim() && pair.answer.trim()
-      )
+      const isValid = pairs.every(pair => pair.question.trim() && pair.answer.trim());
       if (!isValid) {
-        toast.error('Please fill in all question-answer pairs')
-        return
+        toast.error('Please fill in all question-answer pairs');
+        return;
       }
-      setStep(3)
+      setStep(3);
     }
-  }
+  };
 
   const handleBack = () => {
-    setStep(prev => prev - 1)
-  }
+    setStep(prev => prev - 1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!user) {
-      toast.error('You must be signed in to create a deck')
-      router.push('/auth')
-      return
+      toast.error('You must be signed in to create a deck');
+      router.push('/auth');
+      return;
     }
 
     if (!metadata.title.trim() || !metadata.description.trim()) {
-      toast.error('Please fill in all required fields')
-      return
+      toast.error('Please fill in all required fields');
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Convert pairs to cards array
       const cards: Card[] = pairs.flatMap(pair => [
-        { id: uuidv4(), content: `Q: ${pair.question}`, pairId: pair.id },
-        { id: uuidv4(), content: `A: ${pair.answer}`, pairId: pair.id }
-      ])
+        { id: uuidv4(), content: `Q: ${pair.question}`, pairId: pair.id, type: 'question' },
+        { id: uuidv4(), content: `A: ${pair.answer}`, pairId: pair.id, type: 'answer' },
+      ]);
 
       const deck = {
         ...metadata,
         cards: cards.sort(() => Math.random() - 0.5), // Shuffle cards
         userId: user.uid,
         createdAt: new Date(),
-        plays: 0 // Initialize plays count
-      }
+        plays: 0, // Initialize plays count
+      };
 
-      await addDoc(collection(db, 'decks'), deck)
-      toast.success('Deck created successfully!')
-      router.push('/decks')
+      await addDoc(collection(db, 'decks'), deck);
+      toast.success('Deck created successfully!');
+      router.push('/decks');
     } catch (error) {
-      console.error('Error creating deck:', error)
-      toast.error('Failed to create deck. Please try again.')
+      console.error('Error creating deck:', error);
+      toast.error('Failed to create deck. Please try again.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="max-w-3xl mx-auto p-4 mt-16">
+    <div className="mx-auto mt-16 max-w-3xl p-4">
       <div className="mb-8">
         <Progress value={step * 33.33} className="h-2" />
-        <p className="text-sm text-gray-500 mt-2">Step {step} of 3</p>
+        <p className="mt-2 text-sm text-gray-500">Step {step} of 3</p>
       </div>
 
       {step === 1 && (
@@ -133,10 +129,10 @@ export default function CreateDeckPage() {
           <h1 className="text-2xl font-bold">How many pairs?</h1>
           <RadioGroup
             value={numPairs.toString()}
-            onValueChange={(value) => setNumPairs(Number(value) as typeof PAIR_OPTIONS[number])}
+            onValueChange={value => setNumPairs(Number(value) as (typeof PAIR_OPTIONS)[number])}
             className="grid grid-cols-2 gap-4"
           >
-            {PAIR_OPTIONS.map((num) => (
+            {PAIR_OPTIONS.map(num => (
               <div key={num}>
                 <RadioGroupItem
                   value={num.toString()}
@@ -145,10 +141,10 @@ export default function CreateDeckPage() {
                 />
                 <Label
                   htmlFor={`pairs-${num}`}
-                  className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                  className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-center rounded-lg border-2 p-4"
                 >
                   <span className="text-2xl font-bold">{num}</span>
-                  <span className="text-sm text-muted-foreground">pairs</span>
+                  <span className="text-muted-foreground text-sm">pairs</span>
                 </Label>
               </div>
             ))}
@@ -161,23 +157,18 @@ export default function CreateDeckPage() {
           <h1 className="text-2xl font-bold">Enter Card Pairs</h1>
           <div className="space-y-4">
             {pairs.map((pair, index) => (
-              <div
-                key={pair.id}
-                className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg"
-              >
-                <div className="flex-none w-6 text-gray-400 font-medium">
-                  {index + 1}.
-                </div>
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div key={pair.id} className="flex items-start gap-4 rounded-lg bg-gray-50 p-4">
+                <div className="w-6 flex-none font-medium text-gray-400">{index + 1}.</div>
+                <div className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2">
                   <Input
                     value={pair.question}
-                    onChange={(e) => updatePair(pair.id, 'question', e.target.value)}
+                    onChange={e => updatePair(pair.id, 'question', e.target.value)}
                     placeholder="Question"
                     className="bg-white"
                   />
                   <Input
                     value={pair.answer}
-                    onChange={(e) => updatePair(pair.id, 'answer', e.target.value)}
+                    onChange={e => updatePair(pair.id, 'answer', e.target.value)}
                     placeholder="Answer"
                     className="bg-white"
                   />
@@ -191,14 +182,14 @@ export default function CreateDeckPage() {
       {step === 3 && (
         <form onSubmit={handleSubmit} className="space-y-6">
           <h1 className="text-2xl font-bold">Deck Details</h1>
-          
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
                 value={metadata.title}
-                onChange={(e) => setMetadata(prev => ({ ...prev, title: e.target.value }))}
+                onChange={e => setMetadata(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="Enter deck title"
                 required
               />
@@ -209,24 +200,24 @@ export default function CreateDeckPage() {
               <Textarea
                 id="description"
                 value={metadata.description}
-                onChange={(e) => setMetadata(prev => ({ ...prev, description: e.target.value }))}
+                onChange={e => setMetadata(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Enter deck description"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
                 <Select
                   value={metadata.subject}
-                  onValueChange={(value) => setMetadata(prev => ({ ...prev, subject: value }))}
+                  onValueChange={value => setMetadata(prev => ({ ...prev, subject: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select subject" />
                   </SelectTrigger>
                   <SelectContent>
-                    {SUBJECTS.map((subject) => (
+                    {SUBJECTS.map(subject => (
                       <SelectItem key={subject} value={subject}>
                         {subject}
                       </SelectItem>
@@ -239,13 +230,13 @@ export default function CreateDeckPage() {
                 <Label htmlFor="yearGroup">Year Group</Label>
                 <Select
                   value={metadata.yearGroup}
-                  onValueChange={(value) => setMetadata(prev => ({ ...prev, yearGroup: value }))}
+                  onValueChange={value => setMetadata(prev => ({ ...prev, yearGroup: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select year group" />
                   </SelectTrigger>
                   <SelectContent>
-                    {YEAR_GROUPS.map((year) => (
+                    {YEAR_GROUPS.map(year => (
                       <SelectItem key={year} value={year}>
                         {year}
                       </SelectItem>
@@ -260,7 +251,7 @@ export default function CreateDeckPage() {
               <Input
                 id="topic"
                 value={metadata.topic}
-                onChange={(e) => setMetadata(prev => ({ ...prev, topic: e.target.value }))}
+                onChange={e => setMetadata(prev => ({ ...prev, topic: e.target.value }))}
                 placeholder="Enter topic"
               />
             </div>
@@ -269,9 +260,7 @@ export default function CreateDeckPage() {
               <Switch
                 id="public"
                 checked={metadata.isPublic}
-                onCheckedChange={(checked) => 
-                  setMetadata(prev => ({ ...prev, isPublic: checked }))
-                }
+                onCheckedChange={checked => setMetadata(prev => ({ ...prev, isPublic: checked }))}
               />
               <Label htmlFor="public">Make deck public</Label>
             </div>
@@ -279,26 +268,26 @@ export default function CreateDeckPage() {
         </form>
       )}
 
-      <div className="flex justify-between mt-8">
+      <div className="mt-8 flex justify-between">
         {step > 1 ? (
           <Button type="button" variant="outline" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
         ) : (
-          <div ></div> 
+          <div></div>
         )}
 
         {step < 3 ? (
           <Button onClick={handleNext}>
             Next
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
           <Button onClick={handleSubmit} disabled={loading}>
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating...
               </>
             ) : (
@@ -308,5 +297,5 @@ export default function CreateDeckPage() {
         )}
       </div>
     </div>
-  )
-} 
+  );
+}
