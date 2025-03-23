@@ -30,6 +30,7 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
   const [error, setError] = useState<string | null>(null);
   const [showPreGameModal, setShowPreGameModal] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
+  const [shouldStartAnimation, setShouldStartAnimation] = useState(false);
 
   useEffect(() => {
     const fetchDeck = async () => {
@@ -66,14 +67,16 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
     void fetchDeck();
   }, [id]);
 
-  const handleStartGame = () => {
+  const handleStartGame = (shouldAnimate: boolean) => {
     setShowPreGameModal(false);
     setGameStarted(true);
+    setShouldStartAnimation(shouldAnimate);
   };
 
   const handleRestartGame = () => {
     setGameStarted(false);
     setShowPreGameModal(true);
+    setShouldStartAnimation(false);
   };
 
   if (loading) {
@@ -115,6 +118,7 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
             deckTitle={deck.title}
             deckId={deck.id}
             onRestart={handleRestartGame}
+            shouldStartAnimation={shouldStartAnimation}
           />
 
           <Button variant="outline" onClick={handleRestartGame}>

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Dialog,
@@ -6,38 +6,38 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Share2, Timer, Mouse, Trophy, Star } from 'lucide-react'
-import { toast } from 'sonner'
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Share2, Timer, Mouse, Trophy, Star } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PostGameModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onPlayAgain: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onPlayAgain: () => void;
   stats: {
-    moves: number
-    timeElapsed: number
-    perfectGame: boolean
-  }
-  deckTitle: string
-  deckId: string
+    moves: number;
+    timeElapsed: number;
+    perfectGame: boolean;
+  };
+  deckTitle: string;
+  deckId: string;
 }
 
 // Helper function to format time
 function formatTime(ms: number): string {
-  const seconds = Math.floor(ms / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
 // Helper function to calculate rating based on moves and pairs
 function getRating(moves: number, totalPairs: number): number {
-  const perfectMoves = totalPairs
-  if (moves <= perfectMoves) return 3 // Perfect game
-  if (moves <= perfectMoves * 1.5) return 2 // Good game
-  return 1 // Completed game
+  const perfectMoves = totalPairs;
+  if (moves <= perfectMoves) return 3; // Perfect game
+  if (moves <= perfectMoves * 1.5) return 2; // Good game
+  return 1; // Completed game
 }
 
 export default function PostGameModal({
@@ -49,32 +49,24 @@ export default function PostGameModal({
   deckId,
 }: PostGameModalProps) {
   const handleShare = async () => {
-    const shareText = `I just completed "${deckTitle}" in ${formatTime(stats.timeElapsed)} with ${stats.moves} moves!`
-    const shareUrl = `${window.location.origin}/play/${deckId}`
+    // const shareText = `I just completed "${deckTitle}" in ${formatTime(stats.timeElapsed)} with ${stats.moves} moves!`;
+    const shareUrl = `${window.location.origin}/play/${deckId}`;
 
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Memory Game Results',
-          text: shareText,
-          url: shareUrl,
-        })
-      } else {
-        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`)
-        toast.success('Copied to clipboard!')
-      }
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Copied to clipboard!');
     } catch (error) {
-      console.error('Error sharing:', error)
-      toast.error('Failed to share results')
+      console.error('Error copying to clipboard:', error);
+      toast.error('Unable to copy to clipboard');
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">
-            {stats.perfectGame ? '🎉 Perfect Game! 🎉' : '🎮 Well Done! 🎮'}
+            {stats.perfectGame ? '🎉 Perfect Game! 🎉' : 'Well Done!'}
           </DialogTitle>
           <DialogDescription className="text-center">
             You completed &quot;{deckTitle}&quot;
@@ -84,13 +76,13 @@ export default function PostGameModal({
         <div className="space-y-6">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col items-center p-4 bg-slate-50 rounded-lg">
-              <Timer className="h-6 w-6 mb-2 text-slate-600" />
+            <div className="flex flex-col items-center rounded-lg bg-slate-50 p-4">
+              <Timer className="mb-2 h-6 w-6 text-slate-600" />
               <span className="text-sm text-slate-600">Time</span>
               <span className="text-lg font-bold">{formatTime(stats.timeElapsed)}</span>
             </div>
-            <div className="flex flex-col items-center p-4 bg-slate-50 rounded-lg">
-              <Mouse className="h-6 w-6 mb-2 text-slate-600" />
+            <div className="flex flex-col items-center rounded-lg bg-slate-50 p-4">
+              <Mouse className="mb-2 h-6 w-6 text-slate-600" />
               <span className="text-sm text-slate-600">Moves</span>
               <span className="text-lg font-bold">{stats.moves}</span>
             </div>
@@ -102,8 +94,8 @@ export default function PostGameModal({
               <Star
                 key={i}
                 className={`h-8 w-8 ${
-                  i < getRating(stats.moves, 8) 
-                    ? 'text-yellow-400 fill-yellow-400' 
+                  i < getRating(stats.moves, 8)
+                    ? 'fill-yellow-400 text-yellow-400'
                     : 'text-gray-300'
                 }`}
               />
@@ -112,7 +104,7 @@ export default function PostGameModal({
 
           {/* Perfect Game Badge */}
           {stats.perfectGame && (
-            <div className="flex items-center justify-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+            <div className="flex items-center justify-center gap-2 rounded-lg bg-green-50 p-3 text-green-600">
               <Trophy className="h-5 w-5" />
               <span className="font-medium">Perfect Game!</span>
             </div>
@@ -123,17 +115,13 @@ export default function PostGameModal({
             <Button onClick={onPlayAgain} className="w-full">
               Play Again
             </Button>
-            <Button 
-              onClick={handleShare} 
-              variant="outline" 
-              className="w-full"
-            >
-              <Share2 className="h-4 w-4 mr-2" />
+            <Button onClick={handleShare} variant="outline" className="w-full">
+              <Share2 className="mr-2 h-4 w-4" />
               Share Result
             </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  )
-} 
+  );
+}

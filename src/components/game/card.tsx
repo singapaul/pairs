@@ -31,7 +31,7 @@ export default function Card({ content, isFlipped, onClick, disabled, matched, t
         {/* Back of card */}
         <div
           className={cn(
-            'absolute flex h-full w-full items-center justify-center rounded-lg text-2xl shadow-md [backface-visibility:hidden]',
+            'absolute flex h-full w-full items-center justify-center rounded-lg text-base shadow-md [backface-visibility:hidden] sm:text-lg md:text-xl lg:text-2xl',
             'bg-gradient-to-br from-slate-700 to-slate-800 text-white'
           )}
         >
@@ -41,13 +41,17 @@ export default function Card({ content, isFlipped, onClick, disabled, matched, t
         {/* Front of card */}
         <div
           className={cn(
-            'absolute flex h-full w-full [transform:rotateY(180deg)] items-center justify-center rounded-lg text-2xl shadow-md [backface-visibility:hidden]',
+            'absolute flex h-full w-full [transform:rotateY(180deg)] items-center justify-center rounded-lg shadow-md [backface-visibility:hidden] sm:text-sm md:text-base',
             matched
               ? 'border-2 border-green-500 bg-green-100'
               : 'border-2 border-slate-200 bg-white'
           )}
         >
-          {content}
+          <div className="flex h-full w-full items-center justify-center p-2">
+            <div className="line-clamp-5 w-full text-center leading-tight break-words hyphens-auto">
+              {content}
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
