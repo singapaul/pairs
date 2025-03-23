@@ -89,17 +89,17 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="pb-2">
-          <DialogTitle className="text-xl">How to Play</DialogTitle>
-          <DialogDescription className="text-sm">
+          <DialogTitle className="text-lg sm:text-xl">How to Play</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Match pairs of identical cards to win the game!
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Demo Cards */}
-          <div className="mx-auto grid max-w-[300px] grid-cols-2 gap-3 p-2">
+          <div className="mx-auto grid max-w-[250px] grid-cols-2 gap-2 p-1">
             {demoCards.map(card => (
               <CardComponent
                 key={card.id}
@@ -114,10 +114,10 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
           </div>
 
           {/* Instructions */}
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <h3 className="text-sm font-semibold">Rules:</h3>
-              <ul className="list-disc space-y-1 pl-4 text-sm">
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <h3 className="text-xs font-semibold sm:text-sm">Rules:</h3>
+              <ul className="list-disc space-y-0.5 pl-3 text-xs sm:text-sm">
                 <li>Click on any card to reveal it</li>
                 <li>Click on a second card to find its match</li>
                 <li>If the cards match, they stay face up</li>
@@ -126,9 +126,9 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
                 <li>Match all pairs to win the game!</li>
               </ul>
             </div>
-            <div className="space-y-1.5">
-              <h3 className="text-sm font-semibold">Tips:</h3>
-              <ul className="list-disc space-y-1 pl-4 text-sm">
+            <div className="space-y-1">
+              <h3 className="text-xs font-semibold sm:text-sm">Tips:</h3>
+              <ul className="list-disc space-y-0.5 pl-3 text-xs sm:text-sm">
                 <li>Try to remember the position of cards you&apos;ve seen</li>
                 <li>Take your time - there&apos;s no time limit</li>
                 <li>Focus on finding one pair at a time</li>
@@ -137,7 +137,7 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={onClose}>
               Cancel
             </Button>
