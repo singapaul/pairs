@@ -17,8 +17,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <Navigation />
-          <main className="container mx-auto px-4 py-8">{children}</main>
+          <div className="flex h-screen">
+            {/* Sidebar - fixed full height */}
+            <div className="hidden h-full w-64 border-r md:block">
+              <Navigation className="h-full" />
+            </div>
+
+            {/* Main content area */}
+            <div className="w-full md:w-[calc(100%-16rem)]">
+              <div className="md:hidden">
+                <Navigation />
+              </div>
+              {children}
+            </div>
+          </div>
           <Sonner />
         </AuthProvider>
       </body>
