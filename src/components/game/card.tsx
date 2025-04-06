@@ -1,57 +1,92 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import pairsLogo from '@/assets/PairsLogo.svg';
 
 interface CardProps {
   content: string;
-  isFlipped: boolean;
   onClick: () => void;
   disabled?: boolean;
   matched?: boolean;
-  type?: 'question' | 'answer';
+  selected?: boolean;
+  isCorrect?: boolean;
+  isWrong?: boolean;
+  className?: string;
+  imageUrl?: string;
+  shouldFlip?: boolean;
 }
 
-export default function Card({ content, isFlipped, onClick, disabled, matched, type }: CardProps) {
+export default function CardComponent({
+  content,
+  onClick,
+  disabled = false,
+  matched = false,
+  selected = false,
+  isCorrect = false,
+  isWrong = false,
+  className,
+  imageUrl,
+  shouldFlip = false,
+}: CardProps) {
+  const [imageError, setImageError] = useState(false);
+  const [flipped, setFlipped] = useState(false);
+
+  // Handle flip animation when shouldFlip changes
+  useEffect(() => {
+    if (shouldFlip) {
+      setFlipped(true);
+    }
+  }, [shouldFlip]);
+
   return (
     <div
       className={cn(
-        'relative aspect-square w-full',
-        !disabled && 'cursor-pointer',
-        disabled && 'cursor-default'
+        'perspective-1000 relative aspect-square h-full w-full cursor-pointer',
+        disabled && 'cursor-not-allowed',
+        className
       )}
-      onClick={() => !disabled && onClick()}
+      onClick={disabled ? undefined : onClick}
     >
       <motion.div
         initial={false}
-        animate={{ rotateY: isFlipped ? 180 : 0 }}
+        animate={{ rotateY: flipped ? 180 : 0 }}
         transition={{ duration: 0.6, ease: 'easeInOut' }}
-        className="h-full w-full [transform-style:preserve-3d]"
+        className={cn(
+          'relative h-full w-full rounded-lg transition-transform [transform-style:preserve-3d]',
+          matched && 'border-2 border-green-500 bg-green-50',
+          !matched && selected && 'border-2 border-blue-500',
+          !matched && isCorrect && 'border-2 border-green-500',
+          !matched && isWrong && 'border-2 border-red-500'
+          // disabled && 'opacity-50'
+        )}
       >
-        {/* Back of card */}
-        <div
-          className={cn(
-            'absolute flex h-full w-full items-center justify-center rounded-lg text-base shadow-md [backface-visibility:hidden] sm:text-lg md:text-xl lg:text-2xl',
-            'bg-gradient-to-br from-slate-700 to-slate-800 text-white'
-          )}
-        >
-          {type === 'question' ? 'Q' : 'A'}
+        {/* Front of card (logo) */}
+        <div className="absolute inset-0 flex h-full w-full items-center justify-center rounded-lg border bg-white p-4 shadow-sm [backface-visibility:hidden]">
+          <div className="relative h-16 w-16">
+            <Image src={pairsLogo} alt="Pairs Logo" fill className="object-contain" priority />
+          </div>
         </div>
 
-        {/* Front of card */}
-        <div
-          className={cn(
-            'absolute flex h-full w-full [transform:rotateY(180deg)] items-center justify-center rounded-lg shadow-md [backface-visibility:hidden] sm:text-sm md:text-base',
-            matched
-              ? 'border-2 border-green-500 bg-green-100'
-              : 'border-2 border-slate-200 bg-white'
-          )}
-        >
-          <div className="flex h-full w-full items-center justify-center p-2">
-            <div className="line-clamp-5 w-full text-center leading-tight break-words hyphens-auto">
-              {content}
+        {/* Back of card (content) */}
+        <div className="absolute inset-0 flex h-full w-full [transform:rotateY(180deg)] items-center justify-center rounded-lg border bg-white p-4 shadow-sm [backface-visibility:hidden]">
+          {imageUrl && !imageError ? (
+            <div className="relative h-full w-full">
+              <Image
+                src={imageUrl}
+                alt={content}
+                fill
+                className="rounded-lg object-contain"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={() => setImageError(true)}
+                priority
+              />
             </div>
-          </div>
+          ) : (
+            <p className="text-center text-lg font-medium">{content}</p>
+          )}
         </div>
       </motion.div>
     </div>

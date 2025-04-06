@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Card from './card';
+import CardComponent from './card';
 import { toast } from 'sonner';
 import PostGameModal from './post-game-modal';
 import { useAuth } from '@/lib/auth';
@@ -13,6 +13,7 @@ interface CardType {
   content: string;
   pairId: string;
   type: 'question' | 'answer';
+  imageUrl?: string;
 }
 
 interface CardGameProps {
@@ -20,24 +21,19 @@ interface CardGameProps {
   deckTitle: string;
   deckId: string;
   onRestart?: () => void;
-  shouldStartAnimation?: boolean;
 }
 
-export default function CardGame({
-  cards,
-  deckTitle,
-  deckId,
-  onRestart,
-  shouldStartAnimation = false,
-}: CardGameProps) {
+export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGameProps) {
   const { user } = useAuth();
-  const [flippedCards, setFlippedCards] = useState<string[]>([]);
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
-  const [canFlip, setCanFlip] = useState(false);
+  const [canFlip, setCanFlip] = useState(true);
   const [moves, setMoves] = useState(0);
   const [showPostGame, setShowPostGame] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [shuffledCards, setShuffledCards] = useState<CardType[]>([]);
+  const [selectedCards, setSelectedCards] = useState<string[]>([]);
+  const [isChecking, setIsChecking] = useState(false);
+  const [shouldFlip, setShouldFlip] = useState(false);
   const gameStartTime = useRef<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout>(null);
 
@@ -59,6 +55,9 @@ export default function CardGame({
     setMoves(0);
     setTimeElapsed(0);
     setCanFlip(false);
+    setSelectedCards([]);
+    setIsChecking(false);
+    setShouldFlip(false);
     gameStartTime.current = Date.now();
 
     // Start timer
@@ -68,33 +67,22 @@ export default function CardGame({
       }
     }, 1000);
 
+    // Trigger initial flip after a short delay
+    const flipTimer = setTimeout(() => {
+      setShouldFlip(true);
+      // Enable card selection after flip animation completes
+      setTimeout(() => {
+        setCanFlip(true);
+      }, 600);
+    }, 1000);
+
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      clearTimeout(flipTimer);
     };
   }, [cards]);
-
-  // Handle initial flip animation
-  useEffect(() => {
-    if (shouldStartAnimation && shuffledCards.length > 0) {
-      const initialFlip = async () => {
-        // Flip all cards
-        setFlippedCards(shuffledCards.map(card => card.id));
-
-        // Wait 2 seconds
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Unflip all cards
-        setFlippedCards([]);
-
-        // Enable card flipping
-        setCanFlip(true);
-      };
-
-      initialFlip();
-    }
-  }, [shouldStartAnimation, shuffledCards]);
 
   // Handle game completion
   useEffect(() => {
@@ -133,29 +121,31 @@ export default function CardGame({
   }, [matchedPairs, shuffledCards.length, moves, user, deckId, deckTitle]);
 
   const handleCardClick = (cardId: string) => {
-    if (!canFlip || flippedCards.includes(cardId)) return;
+    if (!canFlip || selectedCards.includes(cardId) || isChecking) return;
 
-    const newFlippedCards = [...flippedCards, cardId];
-    setFlippedCards(newFlippedCards);
+    const newSelectedCards = [...selectedCards, cardId];
+    setSelectedCards(newSelectedCards);
 
-    if (newFlippedCards.length === 2) {
+    if (newSelectedCards.length === 2) {
       setMoves(prev => prev + 1);
-      setCanFlip(false);
+      setIsChecking(true);
 
-      const [firstId, secondId] = newFlippedCards;
+      const [firstId, secondId] = newSelectedCards;
       const firstCard = shuffledCards.find(card => card.id === firstId);
       const secondCard = shuffledCards.find(card => card.id === secondId);
 
       if (firstCard && secondCard && firstCard.pairId === secondCard.pairId) {
         // Match found
         setMatchedPairs(prev => [...prev, firstCard.pairId]);
-        setFlippedCards([]);
-        setCanFlip(true);
+        setTimeout(() => {
+          setSelectedCards([]);
+          setIsChecking(false);
+        }, 1000);
       } else {
         // No match
         setTimeout(() => {
-          setFlippedCards([]);
-          setCanFlip(true);
+          setSelectedCards([]);
+          setIsChecking(false);
         }, 1000);
       }
     }
@@ -201,17 +191,31 @@ export default function CardGame({
             numPairs === 40 && 'md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8'
           )}
         >
-          {shuffledCards.map(card => (
-            <Card
-              key={card.id}
-              content={card.content}
-              isFlipped={flippedCards.includes(card.id) || matchedPairs.includes(card.pairId)}
-              onClick={() => handleCardClick(card.id)}
-              disabled={!canFlip || matchedPairs.includes(card.pairId)}
-              matched={matchedPairs.includes(card.pairId)}
-              type={card.type}
-            />
-          ))}
+          {shuffledCards.map(card => {
+            const isSelected = selectedCards.includes(card.id);
+            const isMatched = matchedPairs.includes(card.pairId);
+            const isCorrect =
+              isSelected &&
+              selectedCards.length === 2 &&
+              shuffledCards.find(c => c.id === selectedCards[0])?.pairId ===
+                shuffledCards.find(c => c.id === selectedCards[1])?.pairId;
+            const isWrong = isSelected && selectedCards.length === 2 && !isCorrect;
+
+            return (
+              <CardComponent
+                key={card.id}
+                content={card.content}
+                onClick={() => handleCardClick(card.id)}
+                disabled={!canFlip || isMatched || isChecking}
+                matched={isMatched}
+                selected={isSelected}
+                isCorrect={isCorrect}
+                isWrong={isWrong}
+                imageUrl={card.imageUrl}
+                shouldFlip={shouldFlip}
+              />
+            );
+          })}
         </div>
       </div>
 
