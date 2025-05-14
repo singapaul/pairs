@@ -21,9 +21,16 @@ interface CardGameProps {
   deckTitle: string;
   deckId: string;
   onRestart?: () => void;
+  shouldStartAnimation?: boolean;
 }
 
-export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGameProps) {
+export default function CardGame({
+  cards,
+  deckTitle,
+  deckId,
+  onRestart,
+  shouldStartAnimation,
+}: CardGameProps) {
   const { user } = useAuth();
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
   const [canFlip, setCanFlip] = useState(true);
@@ -67,22 +74,32 @@ export default function CardGame({ cards, deckTitle, deckId, onRestart }: CardGa
       }
     }, 1000);
 
-    // Trigger initial flip after a short delay
-    const flipTimer = setTimeout(() => {
-      setShouldFlip(true);
-      // Enable card selection after flip animation completes
-      setTimeout(() => {
-        setCanFlip(true);
-      }, 600);
-    }, 1000);
+    // Only trigger initial flip if shouldStartAnimation is true
+    if (shouldStartAnimation) {
+      const flipTimer = setTimeout(() => {
+        setShouldFlip(true);
+        // Enable card selection after flip animation completes
+        setTimeout(() => {
+          setCanFlip(true);
+        }, 600);
+      }, 1000);
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      clearTimeout(flipTimer);
-    };
-  }, [cards]);
+      return () => {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+        clearTimeout(flipTimer);
+      };
+    } else {
+      // If no animation, enable card selection immediately
+      setCanFlip(true);
+      return () => {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      };
+    }
+  }, [cards, shouldStartAnimation]);
 
   // Handle game completion
   useEffect(() => {

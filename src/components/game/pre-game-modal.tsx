@@ -104,11 +104,10 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
               <CardComponent
                 key={card.id}
                 content={card.content}
-                isFlipped={flippedCards.includes(card.id)}
+                shouldFlip={flippedCards.includes(card.id)}
                 onClick={() => {}}
                 disabled={true}
                 matched={matchedPair === card.pairId}
-                type={card.type}
               />
             ))}
           </div>
