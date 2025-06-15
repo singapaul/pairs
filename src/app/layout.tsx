@@ -1,11 +1,6 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
-import Navigation from '@/components/navigation';
-import { AuthProvider } from '@/lib/auth';
-import { Sonner } from '@/components/ui/sonner';
-
-const inter = Inter({ subsets: ['latin'] });
+import { ClientLayout } from '@/components/client-layout';
 
 export const metadata: Metadata = {
   title: 'Pairs',
@@ -13,15 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>
-          <Navigation />
-          <main className="container mx-auto px-4 py-8">{children}</main>
-          <Sonner />
-        </AuthProvider>
-      </body>
-    </html>
-  );
+  return <ClientLayout>{children}</ClientLayout>;
 }

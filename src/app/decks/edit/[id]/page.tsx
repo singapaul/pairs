@@ -22,7 +22,9 @@ import { Loader2, Plus, Trash2, PlayCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardPair } from '@/types/deck';
 import { v4 as uuidv4 } from 'uuid';
-
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
+import { SUBJECTS, YEAR_GROUPS } from '@/types/deck';
 interface DeckFormData {
   title: string;
   description: string;
@@ -34,14 +36,15 @@ interface DeckFormData {
   plays: number;
 }
 
-const SUBJECTS = ['Mathematics', 'English', 'Science', 'History', 'Geography'];
-const YEAR_GROUPS = ['Year 7', 'Year 8', 'Year 9', 'Year 10', 'Year 11', 'Year 12', 'Year 13'];
+// const SUBJECTS = ['Mathematics', 'English', 'Science', 'History', 'Geography'];
+// const YEAR_GROUPS = ['Year 7', 'Year 8', 'Year 9', 'Year 10', 'Year 11', 'Year 12', 'Year 13'];
 
 interface CardPairFormData extends CardPair {
   isNew?: boolean;
 }
 
 export default function EditDeckPage({ params }: { params: Promise<{ id: string }> }) {
+  const { language } = useLanguage();
   const resolvedParams = use(params);
   const [formData, setFormData] = useState<DeckFormData>({
     title: '',
@@ -190,9 +193,9 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
   if (!user) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
-        <p>Sign in to edit decks!</p>
+        <p>{t('editDeck.signInMessage', language)}</p>
         <Button asChild>
-          <Link href="/auth">Sign In</Link>
+          <Link href="/auth">{t('editDeck.signIn', language)}</Link>
         </Button>
       </div>
     );
@@ -202,7 +205,7 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <p>Loading deck...</p>
+        <p>{t('editDeck.loading', language)}</p>
       </div>
     );
   }
@@ -211,7 +214,7 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
         <p className="text-red-500">{error}</p>
-        <Button onClick={() => router.back()}>Go Back</Button>
+        <Button onClick={() => router.back()}>{t('editDeck.goBack', language)}</Button>
       </div>
     );
   }
@@ -219,17 +222,19 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
   return (
     <div className="mx-auto mt-16 max-w-3xl py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Edit Deck</h1>
+        <h1 className="text-2xl font-bold">{t('editDeck.title', language)}</h1>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <PlayCircle className="h-4 w-4" />
-          <span>Played {formData.plays} times</span>
+          <span>
+            {t('editDeck.played', language)} {formData.plays} {t('editDeck.times', language)}
+          </span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t('editDeck.deckTitle', language)}</Label>
             <Input
               id="title"
               value={formData.title}
@@ -239,7 +244,7 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('editDeck.description', language)}</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -250,18 +255,18 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
+              <Label htmlFor="subject">{t('editDeck.subject', language)}</Label>
               <Select
                 value={formData.subject}
                 onValueChange={value => setFormData(prev => ({ ...prev, subject: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select subject" />
+                  <SelectValue placeholder={t('editDeck.selectSubject', language)} />
                 </SelectTrigger>
                 <SelectContent>
                   {SUBJECTS.map(subject => (
-                    <SelectItem key={subject} value={subject}>
-                      {subject}
+                    <SelectItem key={subject.value} value={subject.value}>
+                      {language === 'en' ? subject.en : subject.cy}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -269,18 +274,18 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="yearGroup">Year Group</Label>
+              <Label htmlFor="yearGroup">{t('editDeck.yearGroup', language)}</Label>
               <Select
                 value={formData.yearGroup}
                 onValueChange={value => setFormData(prev => ({ ...prev, yearGroup: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select year group" />
+                  <SelectValue placeholder={t('editDeck.selectYearGroup', language)} />
                 </SelectTrigger>
                 <SelectContent>
                   {YEAR_GROUPS.map(year => (
                     <SelectItem key={year} value={year}>
-                      {year}
+                      {t('filters.year', language)} {year}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -289,7 +294,7 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="topic">Topic</Label>
+            <Label htmlFor="topic">{t('editDeck.topic', language)}</Label>
             <Input
               id="topic"
               value={formData.topic}
@@ -304,16 +309,16 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
               checked={formData.isPublic}
               onCheckedChange={checked => setFormData(prev => ({ ...prev, isPublic: checked }))}
             />
-            <Label htmlFor="isPublic">Make deck public</Label>
+            <Label htmlFor="isPublic">{t('editDeck.makeDeckPublic', language)}</Label>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Cards</h2>
+            <h2 className="text-lg font-semibold">{t('editDeck.cards', language)}</h2>
             <Button type="button" onClick={addCardPair} variant="outline" size="sm">
               <Plus className="mr-2 h-4 w-4" />
-              Add Card Pair
+              {t('editDeck.addCardPair', language)}
             </Button>
           </div>
 
@@ -328,13 +333,13 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
                   <Input
                     value={pair.question}
                     onChange={e => updateCardPair(pair.id, 'question', e.target.value)}
-                    placeholder="Question"
+                    placeholder={t('editDeck.question', language)}
                     className="bg-white"
                   />
                   <Input
                     value={pair.answer}
                     onChange={e => updateCardPair(pair.id, 'answer', e.target.value)}
-                    placeholder="Answer"
+                    placeholder={t('editDeck.answer', language)}
                     className="bg-white"
                   />
                 </div>
@@ -351,14 +356,13 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
             ))}
           </div>
         </div>
-
         <div className="space-x-4 pt-4">
           <Button type="submit" disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
+            {t('editDeck.saveChanges', language)}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>
-            Cancel
+            {t('editDeck.cancel', language)}
           </Button>
         </div>
       </form>

@@ -36,9 +36,7 @@ export default function CardComponent({
 
   // Handle flip animation when shouldFlip changes
   useEffect(() => {
-    if (shouldFlip) {
-      setFlipped(true);
-    }
+    setFlipped(shouldFlip);
   }, [shouldFlip]);
 
   return (

@@ -11,11 +11,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/types/deck';
 import CardComponent from './card';
-
+import { Slider } from '@/components/ui/slider';
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 interface PreGameModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onStart: (shouldAnimate: boolean) => void;
+  onStart: (previewTime: number) => void;
   cards: Card[];
 }
 
@@ -23,7 +25,8 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
   const [demoCards, setDemoCards] = useState<Card[]>([]);
   const [flippedCards, setFlippedCards] = useState<string[]>([]);
   const [matchedPair, setMatchedPair] = useState<string | null>(null);
-
+  const [previewTime, setPreviewTime] = useState(5);
+  const { language } = useLanguage();
   // Select two random pairs for the demo
   useEffect(() => {
     if (cards.length > 0) {
@@ -50,40 +53,75 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
   // Demo animation sequence
   useEffect(() => {
     if (demoCards.length > 0) {
+      let isMounted = true;
+      let animationTimeout: NodeJS.Timeout;
+
       const startDemo = async () => {
-        // Wait 1 second before starting
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        try {
+          // Wait 1 second before starting
+          await new Promise(resolve => {
+            animationTimeout = setTimeout(resolve, 1000);
+          });
+          if (!isMounted) return;
 
-        // Flip first card
-        setFlippedCards([demoCards[0].id]);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+          // Flip first card
+          setFlippedCards([demoCards[0].id]);
+          await new Promise(resolve => {
+            animationTimeout = setTimeout(resolve, 1000);
+          });
+          if (!isMounted) return;
 
-        // Flip second card
-        setFlippedCards([demoCards[0].id, demoCards[2].id]);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+          // Flip second card
+          setFlippedCards([demoCards[0].id, demoCards[2].id]);
+          await new Promise(resolve => {
+            animationTimeout = setTimeout(resolve, 1000);
+          });
+          if (!isMounted) return;
 
-        // Unflip cards
-        setFlippedCards([]);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+          // Unflip cards
+          setFlippedCards([]);
+          await new Promise(resolve => {
+            animationTimeout = setTimeout(resolve, 1000);
+          });
+          if (!isMounted) return;
 
-        // Flip first card of second pair
-        setFlippedCards([demoCards[2].id]);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+          // Flip first card of second pair
+          setFlippedCards([demoCards[2].id]);
+          await new Promise(resolve => {
+            animationTimeout = setTimeout(resolve, 1000);
+          });
+          if (!isMounted) return;
 
-        // Flip second card of second pair
-        setFlippedCards([demoCards[2].id, demoCards[3].id]);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+          // Flip second card of second pair
+          setFlippedCards([demoCards[2].id, demoCards[3].id]);
+          await new Promise(resolve => {
+            animationTimeout = setTimeout(resolve, 1000);
+          });
+          if (!isMounted) return;
 
-        // Match the pair
-        setMatchedPair(demoCards[2].pairId);
-        await new Promise(resolve => setTimeout(resolve, 1000));
+          // Match the pair
+          setMatchedPair(demoCards[2].pairId);
+          await new Promise(resolve => {
+            animationTimeout = setTimeout(resolve, 1000);
+          });
+          if (!isMounted) return;
 
-        // Reset for next demo
-        setMatchedPair(null);
-        setFlippedCards([]);
+          // Reset for next demo
+          setMatchedPair(null);
+          setFlippedCards([]);
+        } catch (error) {
+          console.error('Animation error:', error);
+        }
       };
 
-      startDemo();
+      void startDemo();
+
+      return () => {
+        isMounted = false;
+        if (animationTimeout) {
+          clearTimeout(animationTimeout);
+        }
+      };
     }
   }, [demoCards]);
 
@@ -91,9 +129,9 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="pb-2">
-          <DialogTitle className="text-lg sm:text-xl">How to Play</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{t('pregame.title', language)}</DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Match pairs of identical cards to win the game!
+            {t('pregame.description', language)}
           </DialogDescription>
         </DialogHeader>
 
@@ -112,25 +150,52 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
             ))}
           </div>
 
+          {/* Preview Time Selection */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold sm:text-sm">
+              {t('pregame.previewTime', language)}
+            </h3>
+            <div className="space-y-2 p-3">
+              <Slider
+                value={[previewTime]}
+                onValueChange={([value]) => setPreviewTime(value)}
+                min={0}
+                max={15}
+                step={5}
+                className="w-full"
+              />
+              <div className="text-muted-foreground text-center text-xs">
+                {previewTime === 0
+                  ? t('pregame.alwaysShowCards', language)
+                  : `${previewTime} ${t('pregame.previewSeconds', language)}`}
+              </div>
+            </div>
+          </div>
+
           {/* Instructions */}
           <div className="space-y-2">
             <div className="space-y-1">
-              <h3 className="text-xs font-semibold sm:text-sm">Rules:</h3>
+              <h3 className="text-xs font-semibold sm:text-sm">
+                {t('pregame.rules.title', language)}
+              </h3>
               <ul className="list-disc space-y-0.5 pl-3 text-xs sm:text-sm">
-                <li>Click on any card to reveal it</li>
-                <li>Click on a second card to find its match</li>
-                <li>If the cards match, they stay face up</li>
-                <li>If they don&apos;t match, both cards will flip face down</li>
-                <li>Remember the cards you&apos;ve seen to find matches faster</li>
-                <li>Match all pairs to win the game!</li>
+                {t('pregame.rules.list', language)
+                  .split('\n')
+                  .map(line => (
+                    <li key={line}>{line}</li>
+                  ))}
               </ul>
             </div>
             <div className="space-y-1">
-              <h3 className="text-xs font-semibold sm:text-sm">Tips:</h3>
+              <h3 className="text-xs font-semibold sm:text-sm">
+                {t('pregame.tips.title', language)}
+              </h3>
               <ul className="list-disc space-y-0.5 pl-3 text-xs sm:text-sm">
-                <li>Try to remember the position of cards you&apos;ve seen</li>
-                <li>Take your time - there&apos;s no time limit</li>
-                <li>Focus on finding one pair at a time</li>
+                {t('pregame.tips.list', language)
+                  .split('\n')
+                  .map(line => (
+                    <li key={line}>{line}</li>
+                  ))}
               </ul>
             </div>
           </div>
@@ -138,10 +203,10 @@ export default function PreGameModal({ isOpen, onClose, onStart, cards }: PreGam
           {/* Action Buttons */}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={onClose}>
-              Cancel
+              {t('pregame.cancel', language)}
             </Button>
-            <Button size="sm" onClick={() => onStart(true)}>
-              Start Game
+            <Button size="sm" onClick={() => onStart(previewTime)}>
+              {t('pregame.start', language)}
             </Button>
           </div>
         </div>

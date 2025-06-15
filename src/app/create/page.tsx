@@ -24,18 +24,21 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/types/deck';
-
-const PAIR_OPTIONS = [8, 12, 16, 20] as const;
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 
 export default function CreateDeckPage() {
+  const { language } = useLanguage();
+  const PAIR_OPTIONS = [8, 12, 16, 20];
+
   const [step, setStep] = useState(1);
   const [numPairs, setNumPairs] = useState<(typeof PAIR_OPTIONS)[number]>(8);
   const [pairs, setPairs] = useState<CardPair[]>([]);
   const [metadata, setMetadata] = useState<DeckMetadata>({
     title: '',
     description: '',
-    subject: SUBJECTS[0],
-    yearGroup: YEAR_GROUPS[0],
+    subject: '',
+    yearGroup: '',
     topic: '',
     isPublic: true,
   });
@@ -64,7 +67,7 @@ export default function CreateDeckPage() {
       // Validate all pairs are filled
       const isValid = pairs.every(pair => pair.question.trim() && pair.answer.trim());
       if (!isValid) {
-        toast.error('Please fill in all question-answer pairs');
+        toast.error(t('create.fillInAllFields', language));
         return;
       }
       setStep(3);
@@ -79,13 +82,13 @@ export default function CreateDeckPage() {
     e.preventDefault();
 
     if (!user) {
-      toast.error('You must be signed in to create a deck');
+      toast.error(t('create.signInToCreate', language));
       router.push('/auth');
       return;
     }
 
     if (!metadata.title.trim() || !metadata.description.trim()) {
-      toast.error('Please fill in all required fields');
+      toast.error(t('create.fillInRequiredFields', language));
       return;
     }
 
@@ -107,11 +110,11 @@ export default function CreateDeckPage() {
       };
 
       await addDoc(collection(db, 'decks'), deck);
-      toast.success('Deck created successfully!');
+      toast.success(t('create.deckCreatedSuccessfully', language));
       router.push('/decks');
     } catch (error) {
       console.error('Error creating deck:', error);
-      toast.error('Failed to create deck. Please try again.');
+      toast.error(t('create.failedToCreateDeck', language));
     } finally {
       setLoading(false);
     }
@@ -121,12 +124,14 @@ export default function CreateDeckPage() {
     <div className="mx-auto mt-16 max-w-3xl p-4">
       <div className="mb-8">
         <Progress value={step * 33.33} className="h-2" />
-        <p className="mt-2 text-sm text-gray-500">Step {step} of 3</p>
+        <p className="mt-2 text-sm text-gray-500">
+          {t('create.step', language)} {step} {t('create.of', language)} 3
+        </p>
       </div>
 
       {step === 1 && (
         <div className="space-y-6">
-          <h1 className="text-2xl font-bold">How many pairs?</h1>
+          <h1 className="text-2xl font-bold">{t('create.howManyPairs', language)}</h1>
           <RadioGroup
             value={numPairs.toString()}
             onValueChange={value => setNumPairs(Number(value) as (typeof PAIR_OPTIONS)[number])}
@@ -144,7 +149,9 @@ export default function CreateDeckPage() {
                   className="border-muted hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary flex flex-col items-center justify-center rounded-lg border-2 p-4"
                 >
                   <span className="text-2xl font-bold">{num}</span>
-                  <span className="text-muted-foreground text-sm">pairs</span>
+                  <span className="text-muted-foreground text-sm">
+                    {t('create.pairs', language)}
+                  </span>
                 </Label>
               </div>
             ))}
@@ -154,7 +161,7 @@ export default function CreateDeckPage() {
 
       {step === 2 && (
         <div className="space-y-6">
-          <h1 className="text-2xl font-bold">Enter Card Pairs</h1>
+          <h1 className="text-2xl font-bold">{t('create.enterCardPairs', language)}</h1>
           <div className="space-y-4">
             {pairs.map((pair, index) => (
               <div key={pair.id} className="flex items-start gap-4 rounded-lg bg-gray-50 p-4">
@@ -163,13 +170,13 @@ export default function CreateDeckPage() {
                   <Input
                     value={pair.question}
                     onChange={e => updatePair(pair.id, 'question', e.target.value)}
-                    placeholder="Question"
+                    placeholder={t('create.question', language)}
                     className="bg-white"
                   />
                   <Input
                     value={pair.answer}
                     onChange={e => updatePair(pair.id, 'answer', e.target.value)}
-                    placeholder="Answer"
+                    placeholder={t('create.answer', language)}
                     className="bg-white"
                   />
                 </div>
@@ -181,45 +188,45 @@ export default function CreateDeckPage() {
 
       {step === 3 && (
         <form onSubmit={handleSubmit} className="space-y-6">
-          <h1 className="text-2xl font-bold">Deck Details</h1>
+          <h1 className="text-2xl font-bold">{t('create.deckDetails', language)}</h1>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">{t('create.deckTitle', language)}</Label>
               <Input
                 id="title"
                 value={metadata.title}
                 onChange={e => setMetadata(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter deck title"
+                placeholder={t('create.enterDeckTitle', language)}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('create.deckDescription', language)}</Label>
               <Textarea
                 id="description"
                 value={metadata.description}
                 onChange={e => setMetadata(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter deck description"
+                placeholder={t('create.enterDeckDescription', language)}
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
+                <Label htmlFor="subject">{t('create.subject', language)}</Label>
                 <Select
                   value={metadata.subject}
                   onValueChange={value => setMetadata(prev => ({ ...prev, subject: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select subject" />
+                    <SelectValue placeholder={t('create.selectSubject', language)} />
                   </SelectTrigger>
                   <SelectContent>
                     {SUBJECTS.map(subject => (
-                      <SelectItem key={subject} value={subject}>
-                        {subject}
+                      <SelectItem key={subject.value} value={subject.value}>
+                        {language === 'en' ? subject.en : subject.cy}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -227,13 +234,13 @@ export default function CreateDeckPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="yearGroup">Year Group</Label>
+                <Label htmlFor="yearGroup">{t('create.yearGroup', language)}</Label>
                 <Select
                   value={metadata.yearGroup}
                   onValueChange={value => setMetadata(prev => ({ ...prev, yearGroup: value }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select year group" />
+                    <SelectValue placeholder={t('create.selectYearGroup', language)} />
                   </SelectTrigger>
                   <SelectContent>
                     {YEAR_GROUPS.map(year => (
@@ -247,12 +254,12 @@ export default function CreateDeckPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="topic">Topic</Label>
+              <Label htmlFor="topic">{t('create.deckTopic', language)}</Label>
               <Input
                 id="topic"
                 value={metadata.topic}
                 onChange={e => setMetadata(prev => ({ ...prev, topic: e.target.value }))}
-                placeholder="Enter topic"
+                placeholder={t('create.enterDeckTopic', language)}
               />
             </div>
 
@@ -262,7 +269,7 @@ export default function CreateDeckPage() {
                 checked={metadata.isPublic}
                 onCheckedChange={checked => setMetadata(prev => ({ ...prev, isPublic: checked }))}
               />
-              <Label htmlFor="public">Make deck public</Label>
+              <Label htmlFor="public">{t('create.public', language)}</Label>
             </div>
           </div>
         </form>
@@ -272,7 +279,7 @@ export default function CreateDeckPage() {
         {step > 1 ? (
           <Button type="button" variant="outline" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            {t('create.back', language)}
           </Button>
         ) : (
           <div></div>
@@ -280,7 +287,7 @@ export default function CreateDeckPage() {
 
         {step < 3 ? (
           <Button onClick={handleNext}>
-            Next
+            {t('create.next', language)}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
@@ -288,10 +295,10 @@ export default function CreateDeckPage() {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                {t('create.creating', language)}
               </>
             ) : (
-              'Create Deck'
+              t('create.createDeck', language)
             )}
           </Button>
         )}

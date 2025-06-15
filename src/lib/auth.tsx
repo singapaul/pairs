@@ -11,6 +11,8 @@ import {
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 
 interface AuthContextType {
   user: User | null;
@@ -35,6 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
+  const { language } = useLanguage();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async user => {
@@ -57,32 +60,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOutUser = async () => {
     try {
       await signOut(auth);
-      toast.success('Signed out successfully');
+      toast.success(t('toast.signOutSuccess', language));
       router.push('/');
     } catch (error) {
       console.error('Error signing out:', error);
-      toast.error('Failed to sign out');
+      toast.error(t('toast.failedSignOut', language));
     }
   };
 
   const signInWithEmailAndPassword = async (email: string, password: string) => {
     try {
       await firebaseSignIn(auth, email, password);
-      toast.success('Signed in successfully');
+      toast.success(t('toast.signInSuccess', language));
       router.push('/decks');
     } catch (error: unknown) {
       console.error('Error signing in:', error);
       if (error instanceof Error && 'code' in error) {
         const firebaseError = error as { code: string };
         if (firebaseError.code === 'auth/user-not-found') {
-          toast.error('No account found with this email');
+          toast.error(t('toast.noAccountFound', language));
         } else if (firebaseError.code === 'auth/wrong-password') {
-          toast.error('Incorrect password');
+          toast.error(t('toast.incorrectPassword', language));
         } else {
-          toast.error('Failed to sign in');
+          toast.error(t('toast.signInFailed', language));
         }
       } else {
-        toast.error('Failed to sign in');
+        toast.error(t('toast.signInFailed', language));
       }
       throw error;
     }
@@ -97,18 +100,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
       window.localStorage.setItem('emailForSignIn', email);
-      toast.success('Check your email for the sign in link!');
+      toast.success(t('toast.signInLinkSent', language));
     } catch (error: unknown) {
       console.error('Error sending sign in link:', error);
       if (error instanceof Error && 'code' in error) {
         const firebaseError = error as { code: string };
         if (firebaseError.code === 'auth/invalid-email') {
-          toast.error('Invalid email address');
+          toast.error(t('toast.invalidEmail', language));
         } else {
-          toast.error('Failed to send sign in link');
+          toast.error(t('toast.failedToSendLink', language));
         }
       } else {
-        toast.error('Failed to send sign in link');
+        toast.error(t('toast.failedToSendLink', language));
       }
       throw error;
     }
@@ -156,13 +159,14 @@ export function useRequireAuth() {
 export function useRequireAdmin() {
   const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
+  const { language } = useLanguage();
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
       router.push('/');
-      toast.error('You do not have permission to access this page');
+      toast.error(t('toast.noPermission', language));
     }
-  }, [user, loading, isAdmin, router]);
+  }, [user, loading, isAdmin, router, language]);
 
   return { user, loading, isAdmin };
 }

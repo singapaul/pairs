@@ -7,7 +7,8 @@ import PostGameModal from './post-game-modal';
 import { useAuth } from '@/lib/auth';
 import { saveGameResult } from '@/lib/stats';
 import { cn } from '@/lib/utils';
-
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 interface CardType {
   id: string;
   content: string;
@@ -21,7 +22,7 @@ interface CardGameProps {
   deckTitle: string;
   deckId: string;
   onRestart?: () => void;
-  shouldStartAnimation?: boolean;
+  previewTime: number;
 }
 
 export default function CardGame({
@@ -29,7 +30,7 @@ export default function CardGame({
   deckTitle,
   deckId,
   onRestart,
-  shouldStartAnimation,
+  previewTime,
 }: CardGameProps) {
   const { user } = useAuth();
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
@@ -40,10 +41,10 @@ export default function CardGame({
   const [shuffledCards, setShuffledCards] = useState<CardType[]>([]);
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [isChecking, setIsChecking] = useState(false);
-  const [shouldFlip, setShouldFlip] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const gameStartTime = useRef<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout>(null);
-
+  const { language } = useLanguage();
   // Fisher-Yates shuffle algorithm
   const shuffleCards = (cards: CardType[]) => {
     const shuffled = [...cards];
@@ -56,50 +57,49 @@ export default function CardGame({
 
   // Initialize game
   useEffect(() => {
-    // Shuffle cards
     setShuffledCards(shuffleCards(cards));
     setMatchedPairs([]);
     setMoves(0);
     setTimeElapsed(0);
-    setCanFlip(false);
     setSelectedCards([]);
     setIsChecking(false);
-    setShouldFlip(false);
     gameStartTime.current = Date.now();
 
-    // Start timer
+    // Set up the timer immediately
     timerRef.current = setInterval(() => {
       if (gameStartTime.current) {
         setTimeElapsed(Date.now() - gameStartTime.current);
       }
     }, 1000);
 
-    // Only trigger initial flip if shouldStartAnimation is true
-    if (shouldStartAnimation) {
-      const flipTimer = setTimeout(() => {
-        setShouldFlip(true);
-        // Enable card selection after flip animation completes
-        setTimeout(() => {
-          setCanFlip(true);
-        }, 600);
-      }, 1000);
+    if (previewTime === 0) {
+      // Always show cards mode (study mode)
+      setPreviewing(true); // Keep cards face up
+      setCanFlip(true); // Enable card flipping
+    } else {
+      // Normal preview mode
+      setPreviewing(true); // Start in preview mode
+      setCanFlip(false); // Disable card flipping during preview
+
+      // After preview time, hide cards and enable flipping
+      const previewTimer = setTimeout(() => {
+        setPreviewing(false); // End preview mode
+        setCanFlip(true); // Enable card flipping for the game
+      }, previewTime * 1000);
 
       return () => {
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
-        clearTimeout(flipTimer);
-      };
-    } else {
-      // If no animation, enable card selection immediately
-      setCanFlip(true);
-      return () => {
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (previewTimer) clearTimeout(previewTimer);
       };
     }
-  }, [cards, shouldStartAnimation]);
+
+    // Cleanup function for the timer
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [cards, previewTime]);
 
   // Handle game completion
   useEffect(() => {
@@ -124,18 +124,18 @@ export default function CardGame({
 
         saveGameResult(result)
           .then(() => {
-            toast.success('Game completed!');
+            toast.success(t('toast.gameCompleted', language));
           })
           .catch(error => {
             console.error('Error saving game result:', error);
-            toast.error('Failed to save game result');
+            toast.error(t('toast.failedToSaveGameResult', language));
           });
       }
 
       setShowPostGame(true);
       setCanFlip(false);
     }
-  }, [matchedPairs, shuffledCards.length, moves, user, deckId, deckTitle]);
+  }, [language, matchedPairs, shuffledCards.length, moves, user, deckId, deckTitle]);
 
   const handleCardClick = (cardId: string) => {
     if (!canFlip || selectedCards.includes(cardId) || isChecking) return;
@@ -189,8 +189,12 @@ export default function CardGame({
     <>
       <div className="mx-auto w-full max-w-7xl">
         <div className="mb-4 flex items-center justify-between px-4">
-          <div className="text-lg font-medium">Moves: {moves}</div>
-          <div className="text-lg font-medium">Time: {formatTime(timeElapsed)}</div>
+          <div className="text-lg font-medium">
+            {t('gamePage.moves', language)} {moves}
+          </div>
+          <div className="text-lg font-medium">
+            {t('gamePage.time', language)} {formatTime(timeElapsed)}
+          </div>
         </div>
         <div
           className={cn(
@@ -210,26 +214,24 @@ export default function CardGame({
         >
           {shuffledCards.map(card => {
             const isSelected = selectedCards.includes(card.id);
-            const isMatched = matchedPairs.includes(card.pairId);
-            const isCorrect =
-              isSelected &&
-              selectedCards.length === 2 &&
-              shuffledCards.find(c => c.id === selectedCards[0])?.pairId ===
-                shuffledCards.find(c => c.id === selectedCards[1])?.pairId;
-            const isWrong = isSelected && selectedCards.length === 2 && !isCorrect;
-
+            const isCorrect = false;
+            const isWrong = false;
             return (
               <CardComponent
                 key={card.id}
                 content={card.content}
                 onClick={() => handleCardClick(card.id)}
-                disabled={!canFlip || isMatched || isChecking}
-                matched={isMatched}
+                disabled={selectedCards.includes(card.id) || matchedPairs.includes(card.pairId)}
+                matched={matchedPairs.includes(card.pairId)}
                 selected={isSelected}
                 isCorrect={isCorrect}
                 isWrong={isWrong}
                 imageUrl={card.imageUrl}
-                shouldFlip={shouldFlip}
+                shouldFlip={
+                  previewing ||
+                  selectedCards.includes(card.id) ||
+                  matchedPairs.includes(card.pairId)
+                }
               />
             );
           })}

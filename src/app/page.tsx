@@ -1,31 +1,32 @@
-'use client'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth'
-import PairsLogo from '@/assets/PairsLogo.svg'
-import Image from 'next/image'
-
+'use client';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/auth';
+import PairsLogo from '@/assets/PairsLogo.svg';
+import Image from 'next/image';
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 export default function Home() {
-  const { user } = useAuth()
-  
+  const { user } = useAuth();
+  const { language } = useLanguage();
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <div className="flex flex-col items-center justify-center px-4 sm:px-20 text-center max-w-4xl mx-auto">
-        <Image src={PairsLogo} alt="Pairs Logo" className="w-48 mb-8" priority />
-        <p className="text-xl text-gray-600 max-w-2xl">
-          Challenge your memory with our fun card matching game. Create your own decks or play with existing ones. Track your progress and compete with others!
-        </p>
-        <div className="flex flex-wrap justify-center gap-4 mt-8">
+    <div className="flex h-screen flex-col items-center justify-center">
+      <div className="mx-auto flex max-w-4xl flex-col items-center justify-center px-4 text-center sm:px-20">
+        <Image src={PairsLogo} alt="Pairs Logo" className="mb-8 w-48" priority />
+        <p className="max-w-2xl text-xl text-gray-600">{t('home.title', language)}</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link href="/decks">
-            <Button size="lg">Browse Decks</Button>
+            <Button size="lg">{t('home.browse', language)}</Button>
           </Link>
           {user && (
             <Link href="/create">
-              <Button size="lg" variant="outline">Create Deck</Button>
+              <Button size="lg" variant="outline">
+                {t('home.create', language)}
+              </Button>
             </Link>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

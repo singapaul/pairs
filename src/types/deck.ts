@@ -35,27 +35,55 @@ export interface DeckMetadata {
 }
 
 export const SUBJECTS = [
-  'Mathematics',
-  'English',
-  'Science',
-  'History',
-  'Geography',
-  'Languages',
-  'Other',
+  {
+    en: 'Mathematics',
+    cy: 'Mathemateg',
+    value: 'maths',
+  },
+  {
+    en: 'English',
+    cy: 'Saesneg',
+    value: 'english',
+  },
+  {
+    en: 'Science',
+    cy: 'Gwyddoniaeth',
+    value: 'science',
+  },
+  {
+    en: 'History',
+    cy: 'Hanes',
+    value: 'history',
+  },
+  {
+    en: 'Geography',
+    cy: 'Daearyddiaeth',
+    value: 'geography',
+  },
+  {
+    en: 'Languages',
+    cy: 'Leithoedd',
+    value: 'languages',
+  },
+  {
+    en: 'Other',
+    cy: 'Arall',
+    value: 'other',
+  },
 ] as const;
 
 export const YEAR_GROUPS = [
-  'Year 1',
-  'Year 2',
-  'Year 3',
-  'Year 4',
-  'Year 5',
-  'Year 6',
-  'Year 7',
-  'Year 8',
-  'Year 9',
-  'Year 10',
-  'Year 11',
-  'Year 12',
-  'Year 13',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
+  '12',
+  '13',
 ] as const;

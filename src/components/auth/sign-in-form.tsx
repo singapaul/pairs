@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth';
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 import { Loader2 } from 'lucide-react';
 
 export default function SignInForm() {
+  const { language } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,7 +31,7 @@ export default function SignInForm() {
         <div className="space-y-2">
           <Input
             type="email"
-            placeholder="Enter your email"
+            placeholder={t('signIn.enterEmail', language)}
             value={email}
             onChange={e => setEmail(e.target.value)}
             disabled={loading}
@@ -38,7 +41,7 @@ export default function SignInForm() {
         <div className="space-y-2">
           <Input
             type="password"
-            placeholder="Enter your password"
+            placeholder={t('signIn.enterPassword', language)}
             value={password}
             onChange={e => setPassword(e.target.value)}
             disabled={loading}
@@ -50,10 +53,10 @@ export default function SignInForm() {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
+                {t('signIn.signingIn', language)}
               </>
             ) : (
-              'Sign In'
+              t('signIn.signIn', language)
             )}
           </Button>
         </div>

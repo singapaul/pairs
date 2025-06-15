@@ -9,6 +9,8 @@ import CardGame from '@/components/game/card-game';
 import { use } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 
 interface Deck {
   id: string;
@@ -24,13 +26,14 @@ interface Deck {
 
 export default function PlayPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { language } = useLanguage();
   const router = useRouter();
   const [deck, setDeck] = useState<Deck | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showPreGameModal, setShowPreGameModal] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
-  const [shouldStartAnimation, setShouldStartAnimation] = useState(false);
+  const [previewTime, setPreviewTime] = useState(0);
 
   useEffect(() => {
     const fetchDeck = async () => {
@@ -67,16 +70,15 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
     void fetchDeck();
   }, [id]);
 
-  const handleStartGame = (shouldAnimate: boolean) => {
+  const handleStartGame = (previewTime: number) => {
     setShowPreGameModal(false);
     setGameStarted(true);
-    setShouldStartAnimation(shouldAnimate);
+    setPreviewTime(previewTime);
   };
 
   const handleRestartGame = () => {
     setGameStarted(false);
     setShowPreGameModal(true);
-    setShouldStartAnimation(false);
   };
 
   if (loading) {
@@ -112,17 +114,15 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
             <h1 className="mb-2 text-2xl font-bold">{deck.title}</h1>
             <p className="text-gray-600">{deck.description}</p>
           </div>
-
           <CardGame
             cards={deck.cards}
             deckTitle={deck.title}
             deckId={deck.id}
             onRestart={handleRestartGame}
-            shouldStartAnimation={shouldStartAnimation}
+            previewTime={previewTime}
           />
-
           <Button variant="outline" onClick={handleRestartGame}>
-            Restart Game
+            {t('gamePage.restartGame', language)}
           </Button>
         </div>
       ) : (

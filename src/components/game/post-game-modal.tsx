@@ -10,6 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Share2, Timer, Mouse, Trophy, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/lib/language';
+import { t } from '@/lib/translations';
 
 interface PostGameModalProps {
   isOpen: boolean;
@@ -48,16 +50,18 @@ export default function PostGameModal({
   deckTitle,
   deckId,
 }: PostGameModalProps) {
+  const { language } = useLanguage();
+
   const handleShare = async () => {
     // const shareText = `I just completed "${deckTitle}" in ${formatTime(stats.timeElapsed)} with ${stats.moves} moves!`;
     const shareUrl = `${window.location.origin}/play/${deckId}`;
 
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success('Copied to clipboard!');
+      toast.success(t('toast.copiedToClipboard', language));
     } catch (error) {
       console.error('Error copying to clipboard:', error);
-      toast.error('Unable to copy to clipboard');
+      toast.error(t('toast.unableToCopyToClipboard', language));
     }
   };
 
@@ -66,10 +70,12 @@ export default function PostGameModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">
-            {stats.perfectGame ? '🎉 Perfect Game! 🎉' : 'Well Done!'}
+            {stats.perfectGame
+              ? t('postgame.perfectGame', language)
+              : t('postgame.wellDone', language)}
           </DialogTitle>
           <DialogDescription className="text-center">
-            You completed &quot;{deckTitle}&quot;
+            {t('postGame.youCompleted', language)} &quot;{deckTitle}&quot;
           </DialogDescription>
         </DialogHeader>
 
@@ -78,12 +84,12 @@ export default function PostGameModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col items-center rounded-lg bg-slate-50 p-4">
               <Timer className="mb-2 h-6 w-6 text-slate-600" />
-              <span className="text-sm text-slate-600">Time</span>
+              <span className="text-sm text-slate-600">{t('postgame.time', language)}</span>
               <span className="text-lg font-bold">{formatTime(stats.timeElapsed)}</span>
             </div>
             <div className="flex flex-col items-center rounded-lg bg-slate-50 p-4">
               <Mouse className="mb-2 h-6 w-6 text-slate-600" />
-              <span className="text-sm text-slate-600">Moves</span>
+              <span className="text-sm text-slate-600">{t('postgame.moves', language)}</span>
               <span className="text-lg font-bold">{stats.moves}</span>
             </div>
           </div>
@@ -106,18 +112,18 @@ export default function PostGameModal({
           {stats.perfectGame && (
             <div className="flex items-center justify-center gap-2 rounded-lg bg-green-50 p-3 text-green-600">
               <Trophy className="h-5 w-5" />
-              <span className="font-medium">Perfect Game!</span>
+              <span className="font-medium">{t('postgame.perfectGame', language)}</span>
             </div>
           )}
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <Button onClick={onPlayAgain} className="w-full">
-              Play Again
+              {t('postgame.playAgain', language)}
             </Button>
             <Button onClick={handleShare} variant="outline" className="w-full">
               <Share2 className="mr-2 h-4 w-4" />
-              Share Result
+              {t('postgame.shareResult', language)}
             </Button>
           </div>
         </div>

@@ -1,125 +1,133 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { SUBJECTS, YEAR_GROUPS } from '@/types/deck'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { X } from 'lucide-react'
+} from '@/components/ui/select';
+import { SUBJECTS, YEAR_GROUPS } from '@/types/deck';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { X } from 'lucide-react';
+import { t } from '@/lib/translations';
 
-const PAIR_COUNTS = [8, 12, 16, 20]
+import { useLanguage } from '@/lib/language';
+const PAIR_COUNTS = [8, 12, 16, 20];
 
 interface DeckFilters {
-  yearGroup: string | null
-  subject: string | null
-  topic: string
-  pairCount: number | null
+  yearGroup: string | null;
+  subject: string | null;
+  topic: string;
+  pairCount: number | null;
 }
 
 interface DeckFiltersProps {
-  filters: DeckFilters
-  onChange: (filters: DeckFilters) => void
-  onReset: () => void
-  totalDecks: number
+  filters: DeckFilters;
+  onChange: (filters: DeckFilters) => void;
+  onReset: () => void;
+  totalDecks: number;
 }
 
 export function DeckFilters({ filters, onChange, onReset, totalDecks }: DeckFiltersProps) {
+  const { language } = useLanguage();
+
   const handleChange = (key: keyof DeckFilters, value: string | number | null) => {
     onChange({
       ...filters,
-      [key]: value
-    })
-  }
+      [key]: value,
+    });
+  };
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className="mb-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Filters</h2>
+        <h2 className="text-lg font-semibold">{t('browse.filters', language)}</h2>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">{totalDecks} decks found</span>
+          <span className="text-sm text-gray-500">
+            {totalDecks} {t('browse.decksFound', language)}
+          </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={onReset}
             className="text-gray-500 hover:text-gray-700"
           >
-            <X className="h-4 w-4 mr-1" />
-            Reset
+            <X className="mr-1 h-4 w-4" />
+            {t('browse.reset', language)}
           </Button>
         </div>
       </div>
-      
-      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-        <div className="w-full md:w-auto space-y-2">
-          <Label>Year Group</Label>
+
+      <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+        <div className="w-full space-y-2 md:w-auto">
+          <Label>{t('browse.yearGroup', language)}</Label>
           <Select
             value={filters.yearGroup || undefined}
-            onValueChange={(value) => handleChange('yearGroup', value)}
+            onValueChange={value => handleChange('yearGroup', value)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="All year groups" />
+              <SelectValue placeholder={t('browse.yearGroups', language)} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All year groups</SelectItem>
-              {YEAR_GROUPS.map((year) => (
+              <SelectItem value="all">{t('browse.yearGroups', language)}</SelectItem>
+              {YEAR_GROUPS.map(year => (
                 <SelectItem key={year} value={year}>
-                  {year}
+                  {t('filters.year', language)} {year}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="w-full md:w-auto space-y-2">
-          <Label>Subject</Label>
+        <div className="w-full space-y-2 md:w-auto">
+          <Label>{t('browse.subject', language)}</Label>
           <Select
             value={filters.subject || undefined}
-            onValueChange={(value) => handleChange('subject', value)}
+            onValueChange={value => handleChange('subject', value)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="All subjects" />
+              <SelectValue placeholder={t('browse.allSubjects', language)} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All subjects</SelectItem>
-              {SUBJECTS.map((subject) => (
-                <SelectItem key={subject} value={subject}>
-                  {subject}
+              <SelectItem value="all">{t('browse.allSubjects', language)}</SelectItem>
+              {SUBJECTS.map(subject => (
+                <SelectItem key={subject.value} value={subject.value}>
+                  {subject[language]}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="w-full md:w-auto space-y-2">
-          <Label>Topic</Label>
+        <div className="w-full space-y-2 md:w-auto">
+          <Label>{t('browse.topic', language)}</Label>
           <Input
-            placeholder="Filter by topic"
+            placeholder={t('browse.topicFilter', language)}
             value={filters.topic}
-            onChange={(e) => handleChange('topic', e.target.value)}
+            onChange={e => handleChange('topic', e.target.value)}
             className="w-full"
           />
         </div>
 
-        <div className="w-full md:w-auto space-y-2">
-          <Label>Number of Pairs</Label>
+        <div className="w-full space-y-2 md:w-auto">
+          <Label>{t('browse.numberOfPairs', language)}</Label>
           <Select
             value={filters.pairCount?.toString() || undefined}
-            onValueChange={(value) => handleChange('pairCount', value === 'all' ? null : parseInt(value))}
+            onValueChange={value =>
+              handleChange('pairCount', value === 'all' ? null : parseInt(value))
+            }
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Any number" />
+              <SelectValue placeholder={t('browse.anyNumber', language)} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Any number</SelectItem>
-              {PAIR_COUNTS.map((count) => (
+              <SelectItem value="all">{t('browse.anyNumber', language)}</SelectItem>
+              {PAIR_COUNTS.map(count => (
                 <SelectItem key={count} value={count.toString()}>
-                  {count} pairs
+                  {count} {t('browse.pairs', language)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -127,5 +135,5 @@ export function DeckFilters({ filters, onChange, onReset, totalDecks }: DeckFilt
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}
