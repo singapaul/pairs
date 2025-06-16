@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Star } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { collection, doc, deleteDoc, setDoc, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { useLanguage } from '@/lib/language';
 import { t } from '@/lib/translations';
+import { useRouter } from 'next/navigation';
 
 interface FavoriteButtonProps {
   deckId: string;
@@ -19,6 +20,7 @@ export function FavoriteButton({ deckId }: FavoriteButtonProps) {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { language } = useLanguage();
+  const router = useRouter();
 
   useEffect(() => {
     const checkIfFavorite = async () => {
@@ -29,7 +31,7 @@ export function FavoriteButton({ deckId }: FavoriteButtonProps) {
 
       try {
         const q = query(
-          collection(db, 'favorites'),
+          collection(getDb(), 'favorites'),
           where('userId', '==', user.uid),
           where('deckId', '==', deckId)
         );
@@ -45,46 +47,41 @@ export function FavoriteButton({ deckId }: FavoriteButtonProps) {
     void checkIfFavorite();
   }, [deckId, user]);
 
-  const toggleFavorite = async () => {
+  const handleFavorite = async () => {
     if (!user) {
-      toast.error('Please sign in to favorite decks');
+      router.push('/auth');
       return;
     }
 
     try {
-      if (isFavorite) {
-        // Remove from favorites
-        const q = query(
-          collection(db, 'favorites'),
-          where('userId', '==', user.uid),
-          where('deckId', '==', deckId)
-        );
-        const querySnapshot = await getDocs(q);
-        const docToDelete = querySnapshot.docs[0];
+      const favoritesQuery = query(
+        collection(getDb(), 'favorites'),
+        where('userId', '==', user.uid),
+        where('deckId', '==', deckId)
+      );
 
-        if (docToDelete) {
-          await deleteDoc(docToDelete.ref);
-          setIsFavorite(false);
-          toast.success(t('toast.removedFavourites', language));
-        }
-      } else {
+      const querySnapshot = await getDocs(favoritesQuery);
+
+      if (querySnapshot.empty) {
         // Add to favorites
-        const favoriteData = {
+        const newFavoriteRef = doc(collection(getDb(), 'favorites'));
+        await setDoc(newFavoriteRef, {
           userId: user.uid,
           deckId,
           createdAt: new Date(),
-        };
-
-        // Create a new document with an auto-generated ID
-        const newFavoriteRef = doc(collection(db, 'favorites'));
-        await setDoc(newFavoriteRef, favoriteData);
-
+        });
         setIsFavorite(true);
-        toast.success(t('toast.addedFavourites', language));
+        toast.success(t('toast.addedToFavorites', language));
+      } else {
+        // Remove from favorites
+        const favoriteDoc = querySnapshot.docs[0];
+        await deleteDoc(doc(getDb(), 'favorites', favoriteDoc.id));
+        setIsFavorite(false);
+        toast.success(t('toast.removedFromFavorites', language));
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      toast.error('Failed to update favorites');
+      toast.error(t('toast.errorTogglingFavorite', language));
     }
   };
 
@@ -96,7 +93,7 @@ export function FavoriteButton({ deckId }: FavoriteButtonProps) {
     <Button
       variant="ghost"
       size="icon"
-      onClick={toggleFavorite}
+      onClick={handleFavorite}
       className={isFavorite ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500'}
     >
       <Star className="h-5 w-5" fill={isFavorite ? 'currentColor' : 'none'} />

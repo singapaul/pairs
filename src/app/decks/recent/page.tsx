@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
@@ -32,7 +32,7 @@ export default function RecentDecksPage() {
 
         // Get recent game results for the user
         const gameResultsQuery = query(
-          collection(db, 'gameResults'),
+          collection(getDb(), 'gameResults'),
           where('userId', '==', user.uid),
           orderBy('completedAt', 'desc'),
           limit(10)
@@ -43,7 +43,7 @@ export default function RecentDecksPage() {
 
         // Fetch the actual decks
         const decksPromises = deckIds.map(async deckId => {
-          const deckDoc = await getDoc(doc(db, 'decks', deckId));
+          const deckDoc = await getDoc(doc(getDb(), 'decks', deckId));
           if (deckDoc.exists()) {
             return {
               id: deckDoc.id,

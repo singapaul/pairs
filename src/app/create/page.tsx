@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { useAuth } from '@/lib/auth';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -109,7 +109,7 @@ export default function CreateDeckPage() {
         plays: 0, // Initialize plays count
       };
 
-      await addDoc(collection(db, 'decks'), deck);
+      await addDoc(collection(getDb(), 'decks'), deck);
       toast.success(t('create.deckCreatedSuccessfully', language));
       router.push('/decks');
     } catch (error) {

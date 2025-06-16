@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
@@ -43,7 +43,7 @@ export default function DecksPage() {
         setError(null);
 
         const q = query(
-          collection(db, 'decks'),
+          collection(getDb(), 'decks'),
           where('isPublic', '==', true),
           orderBy('createdAt', 'desc')
         );

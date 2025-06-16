@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
@@ -43,7 +43,7 @@ export default function MyDecksPage() {
         setError(null);
 
         const q = query(
-          collection(db, 'decks'),
+          collection(getDb(), 'decks'),
           where('userId', '==', user.uid),
           orderBy('createdAt', 'desc')
         );
@@ -71,7 +71,7 @@ export default function MyDecksPage() {
     if (!deletingDeck) return;
 
     try {
-      await deleteDoc(doc(db, 'decks', deletingDeck.id));
+      await deleteDoc(doc(getDb(), 'decks', deletingDeck.id));
       setDecks(decks.filter(deck => deck.id !== deletingDeck.id));
       toast.success(t('toast.deckDeleted', language));
     } catch (error) {

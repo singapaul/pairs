@@ -16,7 +16,7 @@ const firebaseConfig = {
 // Initialize Firebase (prevent multiple initializations)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize services with client-side checks and error handling
+// Initialize services with client-side checks
 export const db = typeof window !== 'undefined' ? getFirestore(app) : null;
 export const auth = typeof window !== 'undefined' ? getAuth(app) : null;
 export const analytics =
@@ -30,5 +30,11 @@ export const analytics =
         }
       })()
     : null;
+
+// Helper function to ensure db is initialized
+export function getDb() {
+  if (!db) throw new Error('Database not initialized');
+  return db;
+}
 
 export { app };
