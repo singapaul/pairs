@@ -14,6 +14,9 @@ export default function VerifyPage() {
   useEffect(() => {
     const verify = async () => {
       try {
+        // Since this is a client component, we can safely assert auth is not null
+        if (!auth) throw new Error('Auth not initialized');
+
         if (isSignInWithEmailLink(auth, window.location.href)) {
           // Get the email from localStorage
           let email = window.localStorage.getItem('emailForSignIn');
