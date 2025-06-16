@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
@@ -30,15 +30,16 @@ export default function FavoriteDecksPage() {
         setLoading(true);
         setError(null);
 
-        // Get user's favorite deck IDs
-        const favoritesQuery = query(collection(db, 'favorites'), where('userId', '==', user.uid));
-
+        const favoritesQuery = query(
+          collection(getDb(), 'favorites'),
+          where('userId', '==', user.uid)
+        );
         const favoritesSnapshot = await getDocs(favoritesQuery);
         const deckIds = favoritesSnapshot.docs.map(doc => doc.data().deckId);
 
         // Fetch the actual decks
         const decksPromises = deckIds.map(async deckId => {
-          const deckDoc = await getDoc(doc(db, 'decks', deckId));
+          const deckDoc = await getDoc(doc(getDb(), 'decks', deckId));
           if (deckDoc.exists()) {
             return {
               id: deckDoc.id,

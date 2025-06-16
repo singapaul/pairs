@@ -18,7 +18,7 @@ interface NavigationProps {
 
 export function Navigation({ onToggleSidebar }: NavigationProps) {
   const pathname = usePathname();
-  const { user, signOutUser } = useAuth();
+  const { user, signOut } = useAuth();
   const { language } = useLanguage();
   const isDecksPage = pathname?.startsWith('/decks');
 
@@ -53,7 +53,7 @@ export function Navigation({ onToggleSidebar }: NavigationProps) {
         <div className="flex items-center space-x-4">
           <LanguageToggle />
           {user ? (
-            <Button variant="ghost" size="sm" onClick={() => signOutUser()}>
+            <Button variant="ghost" size="sm" onClick={() => signOut()}>
               {t('nav.signOut', language)}
             </Button>
           ) : (

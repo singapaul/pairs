@@ -3,9 +3,9 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import {
   User,
-  onAuthStateChanged,
-  signOut,
   signInWithEmailAndPassword as firebaseSignIn,
+  signOut,
+  onAuthStateChanged,
   sendSignInLinkToEmail,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -14,118 +14,94 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/lib/language';
 import { t } from '@/lib/translations';
 
+// Helper function to ensure auth is initialized
+function getAuth() {
+  if (!auth) throw new Error('Auth not initialized');
+  return auth;
+}
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signOutUser: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  signInWithEmailLink: (email: string) => Promise<void>;
   isAdmin: boolean;
-  signInWithEmailAndPassword: (email: string, password: string) => Promise<void>;
-  signInWithMagicLink: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signOutUser: async () => {},
+  signIn: async () => {},
+  signOut: async () => {},
+  signInWithEmailLink: async () => {},
   isAdmin: false,
-  signInWithEmailAndPassword: async () => {},
-  signInWithMagicLink: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const { language } = useLanguage();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async user => {
+    const unsubscribe = onAuthStateChanged(getAuth(), async user => {
       setUser(user);
-
-      // Check if user is admin (you can customize this based on your needs)
-      if (user) {
-        const token = await user.getIdTokenResult();
-        setIsAdmin(token.claims.admin === true);
-      } else {
-        setIsAdmin(false);
-      }
-
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const signOutUser = async () => {
+  const handleSignOut = async () => {
     try {
-      await signOut(auth);
-      toast.success(t('toast.signOutSuccess', language));
+      await signOut(getAuth());
       router.push('/');
+      toast.success(t('toast.signedOut', language));
     } catch (error) {
       console.error('Error signing out:', error);
-      toast.error(t('toast.failedSignOut', language));
+      toast.error(t('toast.errorSigningOut', language));
     }
   };
 
-  const signInWithEmailAndPassword = async (email: string, password: string) => {
+  const handleSignIn = async (email: string, password: string) => {
     try {
-      await firebaseSignIn(auth, email, password);
-      toast.success(t('toast.signInSuccess', language));
+      await firebaseSignIn(getAuth(), email, password);
       router.push('/decks');
-    } catch (error: unknown) {
+      toast.success(t('toast.signedIn', language));
+    } catch (error) {
       console.error('Error signing in:', error);
-      if (error instanceof Error && 'code' in error) {
-        const firebaseError = error as { code: string };
-        if (firebaseError.code === 'auth/user-not-found') {
-          toast.error(t('toast.noAccountFound', language));
-        } else if (firebaseError.code === 'auth/wrong-password') {
-          toast.error(t('toast.incorrectPassword', language));
-        } else {
-          toast.error(t('toast.signInFailed', language));
-        }
-      } else {
-        toast.error(t('toast.signInFailed', language));
-      }
-      throw error;
+      toast.error(t('toast.errorSigningIn', language));
     }
   };
 
-  const signInWithMagicLink = async (email: string) => {
+  const handleSignInWithEmailLink = async (email: string) => {
+    const actionCodeSettings = {
+      url: `${window.location.origin}/auth/verify`,
+      handleCodeInApp: true,
+    };
+
     try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/auth/verify`,
-        handleCodeInApp: true,
-      };
-
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      await sendSignInLinkToEmail(getAuth(), email, actionCodeSettings);
       window.localStorage.setItem('emailForSignIn', email);
-      toast.success(t('toast.signInLinkSent', language));
-    } catch (error: unknown) {
-      console.error('Error sending sign in link:', error);
-      if (error instanceof Error && 'code' in error) {
-        const firebaseError = error as { code: string };
-        if (firebaseError.code === 'auth/invalid-email') {
-          toast.error(t('toast.invalidEmail', language));
-        } else {
-          toast.error(t('toast.failedToSendLink', language));
-        }
-      } else {
-        toast.error(t('toast.failedToSendLink', language));
-      }
-      throw error;
+      toast.success(t('toast.checkEmail', language));
+    } catch (error) {
+      console.error('Error sending sign-in link:', error);
+      toast.error(t('toast.errorSendingLink', language));
     }
   };
+
+  const isAdmin = user?.email === 'paul.hardman@gmail.com';
 
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
-        signOutUser,
+        signIn: handleSignIn,
+        signOut: handleSignOut,
+        signInWithEmailLink: handleSignInWithEmailLink,
         isAdmin,
-        signInWithEmailAndPassword,
-        signInWithMagicLink,
       }}
     >
       {children}
@@ -133,13 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
+export const useAuth = () => useContext(AuthContext);
 
 // Custom hook for protected routes
 export function useRequireAuth() {

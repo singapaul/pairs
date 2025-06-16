@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 import PreGameModal from '@/components/game/pre-game-modal';
 import CardGame from '@/components/game/card-game';
@@ -41,7 +41,7 @@ export default function PlayPage({ params }: { params: Promise<{ id: string }> }
         setLoading(true);
         setError(null);
 
-        const deckRef = doc(db, 'decks', id);
+        const deckRef = doc(getDb(), 'decks', id);
         const deckSnap = await getDoc(deckRef);
 
         if (!deckSnap.exists()) {
