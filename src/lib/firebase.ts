@@ -16,9 +16,19 @@ const firebaseConfig = {
 // Initialize Firebase (prevent multiple initializations)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize services with client-side checks
+// Initialize services with client-side checks and error handling
 export const db = typeof window !== 'undefined' ? getFirestore(app) : null;
 export const auth = typeof window !== 'undefined' ? getAuth(app) : null;
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+export const analytics =
+  typeof window !== 'undefined'
+    ? (() => {
+        try {
+          return getAnalytics(app);
+        } catch (error) {
+          console.warn('Analytics initialization failed:', error);
+          return null;
+        }
+      })()
+    : null;
 
 export { app };
