@@ -10,7 +10,7 @@ export const translations: Translations = {
   // home page
   'home.title': {
     en: 'Challenge your memory with our fun card matching game. Create your own decks or play with existing ones. Track your progress and compete with others!',
-    cy: "Heriwch eich cof gyda'n gêm paru cardiau hwyliog. Crëwch eich deciau eich hun neu chwarae gyda rhai sydd eisoes yn bodoli. Dilynwch eich cynnydd a chystadlu gydag eraill!",
+    cy: 'Heriwch eich cof gyda’n gêm paru cardiau hwyliog. Creu deciau eich hun neu chwarae gyda rhai sy’n bodoli yn barod. Dilynwch eich cynnydd a chystadlwch gydag eraill!',
   },
   'home.browse': {
     en: 'Browse Decks',
@@ -44,7 +44,7 @@ export const translations: Translations = {
   },
   'sidebar.recentlyPlayed': {
     en: 'Recently Played',
-    cy: "Chwarae'n Ddiweddar",
+    cy: 'Gemau Diweddar',
   },
   'sidebar.favourites': {
     en: 'Favourites',
@@ -52,7 +52,7 @@ export const translations: Translations = {
   },
   'sidebar.myDecks': {
     en: 'My decks',
-    cy: 'Fy Nheciau',
+    cy: 'Fy Neciau',
   },
   'sidebar.myStats': {
     en: 'My Stats',
@@ -112,7 +112,7 @@ export const translations: Translations = {
   },
   'browse.topic': {
     en: 'Topic',
-    cy: 'Pwnc penodol',
+    cy: 'Topig',
   },
   'browse.topicFilter': {
     en: 'Filter by topic',
@@ -202,11 +202,11 @@ export const translations: Translations = {
   },
   'signIn.enterEmail': {
     en: 'Enter your email',
-    cy: 'Rhowch eich e-bost',
+    cy: 'Mewnbynnwch eich e-bost',
   },
   'signIn.enterPassword': {
     en: 'Enter your password',
-    cy: 'Rhowch eich cyfrinair',
+    cy: 'Mewnbynnwch eich e-bost',
   },
   'signIn.signIn': {
     en: 'Sign In',
@@ -240,7 +240,7 @@ export const translations: Translations = {
   },
   'pregame.rules.title': {
     en: 'Rules:',
-    cy: 'Rhesymau:',
+    cy: 'Rheolau:',
   },
   'pregame.rules.list': {
     en: [
@@ -252,7 +252,7 @@ export const translations: Translations = {
       'Match all pairs to win the game!',
     ].join('\n'),
     cy: [
-      "Cliciwch ar unrhyw gardiau i'w datgelu",
+      'Cliciwch ar unrhyw gerdyn i’w ddangos',
       "Cliciwch ar ail gardiau i ddod o hyd i'w pâr",
       "Os yw'r cardiau'n paru, byddant yn aros i fyny",
       "Os nad ydynt yn paru, bydd y ddau gerdyn yn troi'n wyneb i lawr",
@@ -350,7 +350,7 @@ export const translations: Translations = {
   // Decks
   'decks.title': {
     en: 'My Decks',
-    cy: '[WELSH] My Decks',
+    cy: 'Fy Neciau',
   },
   'decks.create': {
     en: 'Create New Deck',
@@ -449,7 +449,7 @@ export const translations: Translations = {
   // Recent Decks
   'recentDecks.title': {
     en: 'Recently Played',
-    cy: "Chwarae'n Ddiweddar",
+    cy: 'Gemau Diweddar',
   },
   'recentDecks.loading': {
     en: 'Loading recent decks...',
@@ -461,7 +461,7 @@ export const translations: Translations = {
   },
   'recentDecks.noDecks': {
     en: "You haven't played any decks yet!",
-    cy: 'Nid ydych wedi chwarae unrhyw deciau yn ddiweddar!',
+    cy: 'Dydych chi heb ffefrynnu unrhyw ddeciau eto',
   },
   'recentDecks.retry': {
     en: 'Retry',
@@ -491,7 +491,7 @@ export const translations: Translations = {
   },
   'favorites.noDecks': {
     en: "You haven't favorited any decks yet!",
-    cy: "Nid ydych wedi'u ffefrwch unrhyw deciau yn ddiweddar!",
+    cy: 'Dydych chi heb ffefrynnu unrhyw ddeciau eto',
   },
   'favorites.browseDecks': {
     en: 'Browse Decks',
@@ -513,11 +513,11 @@ export const translations: Translations = {
   // My Decks
   'myDecks.title': {
     en: 'My Decks',
-    cy: 'Fy deciau',
+    cy: 'Fy Neciau',
   },
   'myDecks.noDecks': {
     en: "You haven't created any decks yet!",
-    cy: 'Nid ydych wedi creu unrhyw deciau yn ddiweddar!',
+    cy: 'Dydych chi heb ffefrynnu unrhyw ddeciau eto',
   },
   'myDecks.retry': {
     en: 'Retry',
@@ -661,11 +661,11 @@ export const translations: Translations = {
   },
   'create.deckTopic': {
     en: 'Topic',
-    cy: 'Pwnc penodol',
+    cy: 'Topig',
   },
   'create.enterDeckTopic': {
     en: 'Enter topic',
-    cy: 'Rhowch y pwnc penodol',
+    cy: 'Rhowch bwnc penodol',
   },
   'create.public': {
     en: 'Make deck public',
@@ -773,7 +773,7 @@ export const translations: Translations = {
   },
   'editDeck.topic': {
     en: 'Topic',
-    cy: 'Pwnc penodol',
+    cy: 'Topig',
   },
   'editDeck.enterTopic': {
     en: 'Enter topic',
