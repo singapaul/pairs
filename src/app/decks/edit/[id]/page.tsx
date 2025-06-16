@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -74,7 +74,7 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
         setLoading(true);
         setError(null);
 
-        const deckRef = doc(db, 'decks', resolvedParams.id);
+        const deckRef = doc(getDb(), 'decks', resolvedParams.id);
         const deckSnap = await getDoc(deckRef);
 
         if (!deckSnap.exists()) {
@@ -85,6 +85,11 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
         const deckData = deckSnap.data();
         if (deckData.userId !== user.uid) {
           setError('You do not have permission to edit this deck');
+          return;
+        }
+
+        if (!deckData.cards || deckData.cards.length === 0) {
+          setError('This deck has no cards');
           return;
         }
 
@@ -154,7 +159,7 @@ export default function EditDeckPage({ params }: { params: Promise<{ id: string 
         { id: uuidv4(), pairId: pair.id, content: `A: ${pair.answer}`, type: 'answer' as const },
       ]);
 
-      const deckRef = doc(db, 'decks', resolvedParams.id);
+      const deckRef = doc(getDb(), 'decks', resolvedParams.id);
       await updateDoc(deckRef, {
         ...formData,
         cards: cards.sort(() => Math.random() - 0.5), // Shuffle cards
